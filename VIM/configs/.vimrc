@@ -11,7 +11,7 @@ call vundle#begin()
 
 Plugin 'VundleVim/Vundle.vim'
 
-" Plugin 'vim-scripts/taglist.vim'
+Plugin 'vim-scripts/taglist.vim'
 
 " requred in bash for ctrl+s: stty stop undef # to unmap ctrl-s
 " open ipython qtconsole
@@ -20,6 +20,7 @@ Plugin 'VundleVim/Vundle.vim'
 
 " toggles comments with gc
 Plugin 'tpope/vim-commentary.git'
+
 
 " switches between header and source
 " Plugin 'vim-scripts/a.vim.git'
@@ -45,7 +46,7 @@ Plugin 'tpope/vim-commentary.git'
 "    sudo apt-get update && sudo apt-get upgrade
 " Plugin 'Valloric/YouCompleteMe'
 
-Bundle 'majutsushi/tagbar'
+"Bundle 'majutsushi/tagbar'
 " shows multiple files nicely
 " <F1> for help doesn't work
 " doesn't show vim leader (taglist does)
@@ -81,35 +82,6 @@ autocmd FileType c,cpp,objc map <buffer><Leader>x <Plug>(operator-clang-format)
 " Toggle auto formatting:
 nmap <Leader>C :ClangFormatAutoToggle<CR>
 
-
-"--------- YouCompleteMe options ------------------------
-let g:ycm_register_as_syntastic_checker = 1 "default 1
-let g:Show_diagnostics_ui = 1 "default 1
-
-"will put icons in Vim's gutter on lines that have a diagnostic set.
-"Turning this off will also turn off the YcmErrorLine and YcmWarningLine
-"highlighting
-let g:ycm_enable_diagnostic_signs = 1  " signs in gutter
-let g:ycm_enable_diagnostic_highlighting = 1
-let g:ycm_always_populate_location_list = 1 "default 0
-let g:ycm_open_loclist_on_ycm_diags = 1 "default 1
-
-let g:ycm_complete_in_strings = 1 "default 1
-let g:ycm_collect_identifiers_from_tags_files = 1 "default 0
-
-let g:ycm_global_ycm_extra_conf="~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py"
-let g:ycm_confirm_extra_conf = 0  "ask before loading, security issue
-
-let g:ycm_goto_buffer_command = 'same-buffer' "[ 'same-buffer', 'horizontal-split', 'vertical-split', 'new-tab' ]
-let g:ycm_filetype_whitelist = { '*': 1 }  " only work on certain filetypes?
-let g:ycm_key_invoke_completion = '<C-Space>'
-
-" fixed unreadable #include errors in YCM
-highlight link YcmErrorSection Error
-
-nnoremap <F11> :YcmForceCompileAndDiagnostics <CR>
-"--------- END YouCompleteMe options ------------------------
-
 set backspace=2 "make it work like other aps(?)
 
 set shiftwidth=4
@@ -130,13 +102,6 @@ set listchars=tab:>.,trail:.,extends:#,nbsp:.
 
 " avoid hitting Esc so much
 inoremap jk <C-[>
-" inoremap kj <C-[>
-" inoremap Jk <C-[>
-" inoremap Kj <C-[>
-" inoremap jK <C-[>
-" inoremap kJ <C-[>
-" inoremap JK <C-[>
-" inoremap KJ <C-[>
 " C-[ is better than Esc, not clear why
 
 imap <silent> <Down> <C-o>gj
@@ -151,8 +116,8 @@ set pastetoggle=<F2>
 " tab movement
 nnoremap <C-I> :tabprev<CR>
 nnoremap <C-O> :tabnext<CR>
-inoremap <C-I> <Esc>:tabprev<CR>
-inoremap <C-O> <Esc>:tabnext<CR>
+" inoremap <C-I> <Esc>:tabprev<CR>
+" inoremap <C-O> <Esc>:tabnext<CR>
 
 " split movement
 nmap <C-K> <C-w><Up>
