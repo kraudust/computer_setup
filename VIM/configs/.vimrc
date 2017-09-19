@@ -11,45 +11,8 @@ call vundle#begin()
 
 Plugin 'VundleVim/Vundle.vim'
 
-Plugin 'vim-scripts/taglist.vim'
-
-" requred in bash for ctrl+s: stty stop undef # to unmap ctrl-s
-" open ipython qtconsole
-" run :IPython
-" Plugin 'ivanov/vim-ipython'
-
 " toggles comments with gc
 Plugin 'tpope/vim-commentary.git'
-
-
-" switches between header and source
-" Plugin 'vim-scripts/a.vim.git'
-
-" syntax
-" Plugin 'vim-scripts/scons.vim.git'
-" Plugin 'vim-scripts/SWIG-syntax.git'
-
-" opening companion files
-" might be better than a.vim?
-" Plugin 'derekwyatt/vim-fswitch'
-" settings are in .vim/after/plugin/fswitch.vim
-
-" awesome motion commands
-" Plugin 'Lokaltog/vim-easymotion'
-
-" autocomplete
-"    cd ~/.vim/bundle/YouCompleteMe
-"    ./install.sh --clang-completer
-"    http://susu.github.io/posts/clang-completion-in-vim-with-youcompleteme/
-"    sudo apt-get install clang-format-3.6
-"    sudo add-apt-repository ppa:pkg-vim/vim-daily
-"    sudo apt-get update && sudo apt-get upgrade
-" Plugin 'Valloric/YouCompleteMe'
-
-"Bundle 'majutsushi/tagbar'
-" shows multiple files nicely
-" <F1> for help doesn't work
-" doesn't show vim leader (taglist does)
 
 " required for vim-clang-format
 Bundle 'kana/vim-operator-user.git'
