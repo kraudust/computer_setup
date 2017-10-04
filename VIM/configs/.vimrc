@@ -23,6 +23,7 @@ Bundle 'rhysd/vim-clang-format'
 " python lint, lots of other stuff
 Bundle 'klen/python-mode'
 
+
 " All of your Plugins must be added before the following line
 call vundle#end()
 filetype plugin indent on
@@ -216,6 +217,10 @@ nnoremap <buffer> @ :exec 'w' <cr>
 nnoremap <buffer> > <C-w>>
 nnoremap <buffer> < <C-w><
 command R !./%
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
 
 map <leader>a oassert(False)<ESC>
 map <leader>p oprint<ESC>
