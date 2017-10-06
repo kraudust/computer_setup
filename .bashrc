@@ -114,5 +114,5 @@ if ! shopt -oq posix; then
 fi
 
 source /opt/ros/kinetic/setup.bash
-source ~/git/byu/cur_devel/super_catkin_make.sh
-mega_source
+# source ~/git/byu/cur_devel/super_catkin_make.sh
+# mega_source
