@@ -18,4 +18,4 @@ alias cl='cd ~/git/personal_git/byu_classes'
 alias cm='catkin_make'
 
 # tensorboard
-alias tb='tensorboard --logdir="tf_logs"
+alias tb='tensorboard --logdir="tf_logs"'
