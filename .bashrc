@@ -99,7 +99,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
 if [ -f ~/git/personal_git/computer_setup/.bash_aliases ]; then
-    . ~/git/personal_git/computer_setup/.bash_aliases
+    . ~/computer_setup/.bash_aliases
 fi
 
 # enable programmable completion features (you don't need to enable

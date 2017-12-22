@@ -5,7 +5,7 @@ alias jdrive='sudo mount -t cifs //fs-caedm.et.byu.edu/kraudust ~/J -o  username
 alias sand='cd ~/git/byu/development/sandbox_dustan'
 alias klws='cd ~/git/byu/development/kl_ws'
 # Matlab 2016b Shortcut
-alias matlab2='/usr/local/MATLAB/R2016b/bin/matlab'
+alias matlab='/usr/local/MATLAB/R2016b/bin/matlab'
 
 alias restartpc='sudo shutdown -r 0 RESTARTING PC'
 
