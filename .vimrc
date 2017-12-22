@@ -14,37 +14,9 @@ Plugin 'VundleVim/Vundle.vim'
 " toggles comments with gc
 Plugin 'tpope/vim-commentary.git'
 
-" required for vim-clang-format
-Bundle 'kana/vim-operator-user.git'
-
-" formatting for c, c++ files
-Bundle 'rhysd/vim-clang-format'
-
-" python lint, lots of other stuff
-Bundle 'klen/python-mode'
-
-
 " All of your Plugins must be added before the following line
 call vundle#end()
 filetype plugin indent on
-
-" TODO: move this to c files stuff?
-""" clang format options ---------------------------------
-let g:clang_format#command = "clang-format-3.6"
-let g:clang_format#style_options = {
-            \ "AccessModifierOffset" : -4,
-            \ "AllowShortIfStatementsOnASingleLine" : "true",
-            \ "AlwaysBreakTemplateDeclarations" : "true",
-            \ "ColumnLimit" : 110,
-            \ "Standard" : "C++11"}
-
-" map to <Leader>cf in C++ code
-autocmd FileType c,cpp,objc nnoremap <buffer><Leader>f :<C-u>ClangFormat<CR>
-autocmd FileType c,cpp,objc vnoremap <buffer><Leader>f :ClangFormat<CR>
-" if you install vim-operator-user
-autocmd FileType c,cpp,objc map <buffer><Leader>x <Plug>(operator-clang-format)
-" Toggle auto formatting:
-nmap <Leader>C :ClangFormatAutoToggle<CR>
 
 set backspace=2 "make it work like other aps(?)
 
@@ -65,86 +37,58 @@ set list
 set listchars=tab:>.,trail:.,extends:#,nbsp:.
 
 " avoid hitting Esc so much
-inoremap jk <C-[>
 " C-[ is better than Esc, not clear why
+inoremap jk <C-[>
 
+" ability to move down one displayed line of wrapped code vs. one actual line of code
 imap <silent> <Down> <C-o>gj
 imap <silent> <Up> <C-o>gk
 nmap <silent> <Down> gj
 nmap <silent> <Up> gk
 
+" make sure that the text doesn't wrap as I'm typing long lines of code that I
+:set tw=0
+
+" show line numbers when vim starts
 set number
+" toggle line numbers on and off with F2
 nnoremap <F2> :set nonumber!<CR>
+
+" Paste toggle, to paste text from other sources and not have indenting screwed up (from insert mode)
 set pastetoggle=<F2>
 
-" tab movement
+" tab movement between tabs ctrl-i goes left and ctrl-o goes right
 nnoremap <C-I> :tabprev<CR>
 nnoremap <C-O> :tabnext<CR>
-" inoremap <C-I> <Esc>:tabprev<CR>
-" inoremap <C-O> <Esc>:tabnext<CR>
 
-" split movement
+" split movement move between splits with ctrl+ navigation keys (j,k,l,h)
 nmap <C-K> <C-w><Up>
 nmap <C-J> <C-w><Down>
 nmap <C-L> <C-w><Right>
 nmap <C-H> <C-w><Left>
+" make it so that :sp automatically puts the split below not above
 set splitbelow
+" make it so that the :vsp command automatically puts the split to the right not the left 
 set splitright
 
-" window resizing
+" make windows bigger or smaller with + and -
 nnoremap <silent> + :exe "resize " . (winheight(0) * 3/2)<CR>
 nnoremap <silent> - :exe "resize " . (winheight(0) * 2/3)<CR>
 
-""" MOVE THIS TO PYTHON FILE -------------------
-""" python-mode mappings ----------------------------
-let g:pymode_doc_key = 'K'
+" set the vertical grey line that shows how much code will fit in a word doc w/ 1" margins
+set colorcolumn=104
 
-let g:pymode_rope_completion = 0
-let g:pymode_rope_lookup_project = 0
-
-" syntax highlighting
-let g:pymode_syntax = 1
-let g:pymode_syntax_all = 1
-let g:pymode_syntax_indent_errors = g:pymode_syntax_all
-let g:pymode_syntax_space_errors = g:pymode_syntax_all
-
-" let g:pymode_folding = 0  " comletely disable folding
-set foldlevelstart=2
-
-"Lint
-let g:pymode_lint = 1
-" let g:pymode_lint_checker = "pylint, pep8"  " mccabe, pyflakes, others?
-let g:pymode_lint_checker = "flake8"  " mccabe, pyflakes, others?
-let g:pymode_lint_write = 1  " auto check on save
-
-" let g:pymode_lint_config = '$HOME/.vim/pylint.rc'
-let g:pymode_lint_options_pep8 = {'max_line_length': 110}  " if no config file
-" then draw the line in the right place
-let g:pymode_options_max_line_length = g:pymode_lint_options_pep8['max_line_length']
-highlight ColorColumn term=reverse cterm=reverse gui=reverse  " gray
-
-
-""" easymotion mappings -----------------------------
-" let g:EasyMotion_do_mapping = 1 " Disable default mappings
-
+" easy way to make vertical splits bigger
+nnoremap <C-n> <C-w>>
+"---------------------Made it to here looking through .vimrc-------------------------------------------
 " Jump to anywhere you want with minimal keystrokes, with just one key binding
 nmap <Space> <Plug>(easymotion-s)
 " s2 also an option
-let g:EasyMotion_smartcase = 1
 
 " JK motions: Line motions
 " somehow these get over written
 nmap <Leader>j <Plug>(easymotion-j)
 nmap <Leader>k <Plug>(easymotion-k)
-
-
-" easy way to make vertical splits bigger
-nnoremap <C-n> <C-w>>
-" for some reason <C-n> doesn't work
-
-" for interaction with ipython, needs running ipython qtconsole and :IPython
-nnoremap <silent> <F4> :silent w <CR>:silent python run_this_file()<CR>
-inoremap <F4> <ESC>:w <CR>:python run_this_file()<CR>
 
 " search options
 set incsearch
