@@ -1,8 +1,12 @@
 "#Set things up for vundle
 " Run the following git clone command
 " git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-" Run the following command to install plugins
+" Run the following command to install plugins after adding line to .vimrc
 " :PluginInstall
+" Run the following command to update plugins
+" :PluginUpdate or :PluginInstall!
+" Run the following command to delete plugins after removing line from .vimrc
+" :PluginClean
 
 set nocompatible
 filetype off
