@@ -1,5 +1,9 @@
 function install_vim {
     sudo apt-get install -y vim
+    # install Vundle if it isn't installed
+    if [ ! -f ~/computer_setup/.vim/bundle/Vundle.vim]; then
+        git clone https://github.com/VundleVim/Vundle.vim.git ~/computer_setup/.vim/bundle/Vundle.vim
+    fi
 }
 
 function install_ros_kinetic {
@@ -75,6 +79,25 @@ function install_atom {
     sudo apt-get install -y -f
 }
 
+function configure_dot_files {
+	dir=~/computer_setup # directory containing dot files (name of git repo w/ them)
+	olddir=~/dotfiles_old # move current dot files on machine to this directory
+	files=".bashrc .vimrc .vim" # list of files/folders to symlink in home directory
+	echo "Creating $olddir for backup of any existing dotfiles in ~"
+	mkdir -p $olddir
+	echo "...done"
+	echo "Changing to the $dir directory"
+	cd $dir
+	echo"...done"
+	for file in $files; do
+		echo "Moving any existing dotfiles from ~ to $olddir"
+		mv ~/$file ~/$olddir/
+		echo "Creating symlink to $file in home directory."
+		ln -s $dir/$file ~/$file
+	done
+	source ~/.bashrc
+	source ~/.vimrc
+}
 
 function setupMachine {
     #install_vim
