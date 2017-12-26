@@ -2,7 +2,7 @@ function install_vim {
     sudo apt-get install -y vim
     # install Vundle if it isn't installed
     if [ ! -f ~/computer_setup/.vim/bundle/Vundle.vim ]; then
-        echo "installing Vundle"
+        echo "Installing Vundle"
         cd ~/computer_setup
         git clone https://github.com/VundleVim/Vundle.vim.git ~/computer_setup/.vim/bundle/Vundle.vim
     fi
@@ -100,23 +100,33 @@ function configure_dot_files {
 	source ~/.bashrc
 }
 
+function configure_git_repos {
+    # install git
+    suod apt-get update
+    sudo apt-get install -y git
+    # clone byu classes repository
+    git clone https://github.com/kraudust/byu_classes.git
+}
+
 function setupMachine {
-    #install_vim
-    #wait
+    install_vim
+    wait
+    configure_dot_files
+    wait
     install_ros_kinetic full
     wait
     install_terminator
     wait
-    install_graphic_card_drivers
-    wait
+    # install_graphic_card_drivers
+    # wait
     setup_python
     wait
     install_nlopt
     wait
     install_chrome
     wait
-    install_atom
-    wait
+    # install_atom
+    # wait
     read -p "Setup complete.  It is necessary to reboot the computer. Press enter to proceed..."
     sudo reboot
 }
