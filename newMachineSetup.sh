@@ -1,11 +1,11 @@
 function install_vim {
     sudo apt-get install -y vim
     # install Vundle if it isn't installed
-    if [ ! -f ~/computer_setup/.vim/bundle/Vundle.vim]; then
-        git submodule add  https://github.com/VundleVim/Vundle.vim.git ~/computer_setup/.vim/bundle/Vundle.vim
+    if [ ! -f ~/computer_setup/.vim/bundle/Vundle.vim ]; then
+        echo "installing Vundle"
+        cd ~/computer_setup
+        git clone https://github.com/VundleVim/Vundle.vim.git ~/computer_setup/.vim/bundle/Vundle.vim
     fi
-    git submodule init
-    git submodule update
 }
 
 function install_ros_kinetic {
