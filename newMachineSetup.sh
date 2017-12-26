@@ -2,8 +2,10 @@ function install_vim {
     sudo apt-get install -y vim
     # install Vundle if it isn't installed
     if [ ! -f ~/computer_setup/.vim/bundle/Vundle.vim]; then
-        git clone https://github.com/VundleVim/Vundle.vim.git ~/computer_setup/.vim/bundle/Vundle.vim
+        git submodule add  https://github.com/VundleVim/Vundle.vim.git ~/computer_setup/.vim/bundle/Vundle.vim
     fi
+    git submodule init
+    git submodule update
 }
 
 function install_ros_kinetic {
@@ -88,15 +90,14 @@ function configure_dot_files {
 	echo "...done"
 	echo "Changing to the $dir directory"
 	cd $dir
-	echo"...done"
+	echo "...done"
 	for file in $files; do
 		echo "Moving any existing dotfiles from ~ to $olddir"
-		mv ~/$file ~/$olddir/
+		mv ~/$file $olddir/
 		echo "Creating symlink to $file in home directory."
 		ln -s $dir/$file ~/$file
 	done
 	source ~/.bashrc
-	source ~/.vimrc
 }
 
 function setupMachine {
