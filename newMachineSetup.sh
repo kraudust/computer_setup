@@ -8,6 +8,7 @@ function install_vim {
     fi
     git config --global core.editor vim
     git config --global push.default simple
+    echo "VIM configured"
 }
 
 function install_ros_kinetic {
@@ -46,6 +47,7 @@ function install_ros_kinetic {
 
     # get additional package for gazebo
     sudo apt-get install -y ros-kinetic-gazebo-ros-control
+    echo "ROS Installed"
 }
 
 function install_graphic_card_drivers {
@@ -54,6 +56,7 @@ function install_graphic_card_drivers {
 
 function install_terminator {
     sudo apt-get install -y terminator
+    echo "Terminator Installed"
 }
 
 function setup_python_etc {
@@ -65,22 +68,26 @@ function setup_python_etc {
     #source ros/kinetic to install roslib
     source /opt/ros/kinetic/setup.bash
     sudo apt-get install -y python-roslib
+    echo "Python Configured"
 }
 
 function install_nlopt {
     sudo apt-get install -y libnlopt-dev python-nlopt
+    echo "NLOPT Installed"
 }
 
 function install_chrome {
     wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 	  sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
 	  sudo apt-get install -y -f
+      echo "Chrome Installed"
 }
 
 function install_atom {
     wget https://github.com/atom/atom/releases/download/v1.18.0/atom-amd64.deb
     sudo dpkg -i atom-amd64.deb
     sudo apt-get install -y -f
+    echo "Atom installed"
 }
 
 function configure_dot_files {
@@ -100,6 +107,7 @@ function configure_dot_files {
 		ln -s $dir/$file ~/$file
 	done
 	source ~/.bashrc
+    echo "Dot files configured"
 }
 
 function configure_git_repos {
@@ -117,18 +125,22 @@ function configure_git_repos {
     cd ~/git/byu/cur_devel
     git config --global user.name "Dustan Kraus"
     git config --global user.email "dustan.kraus@byu.edu"
+    echo "Git repos cloned"
 }
 
 function install_trac_ik {
     sudo apt-get install -y ros-kinetic-trac-ik
+    echo "Trac IK installed"
 }
 
 function install_swig {
     sudo apt-get install -y swig3.0
+    echo "Swig Installed"
 }
 
 function install_boost {
     sudo apt-get install -y libboost-all-dev
+    echo "boost installed"
 }
 
 function install_sympybotics {
@@ -147,6 +159,7 @@ function install_sympybotics {
     git clone https://github.com/cdsousa/SymPyBotics.git
     cd SymPyBotics
     sudo python setup.py install
+    echo "Sympybotics installed"
 }
 
 function install_latex {
@@ -154,6 +167,29 @@ function install_latex {
     # sudo apt update
     sudo apt-get install -y texlive-full
     sudo apt-get install -y texmaker
+    echo "LATEX installed"
+}
+
+function install_mendeley {
+    wget -c www.mendeley.com/repositories/ubuntu/stable/amd64/mendeleydesktop-latest
+    sudo dpkg -i mendeleydesktop-latest
+    sudo apt-get install -y -f
+    echo "Mendeley Installed"
+}
+
+function install_spotify {
+    # 1. Add the Spotify repository signing keys to be able to verify downloaded packages
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0DF731E45CE24F27EEEB1450EFDC8610341D9410
+
+    # 2. Add the Spotify repository
+    echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
+
+    # 3. Update list of available packages
+    sudo apt-get update
+
+    # 4. Install Spotify
+    sudo apt-get install -y spotify-client 
+    echo "Spotify Installed"
 }
 
 function setupMachine {
@@ -184,6 +220,10 @@ function setupMachine {
     install_sympybotics
     wait
     install_latex
+    wait
+    install_mendeley
+    wait
+    install_spotify
     wait
     # install_atom
     # wait
