@@ -6,6 +6,8 @@ function install_vim {
         cd ~/computer_setup
         git clone https://github.com/VundleVim/Vundle.vim.git ~/computer_setup/.vim/bundle/Vundle.vim
     fi
+    git config --global core.editor vim
+    git config --global push.default simple
 }
 
 function install_ros_kinetic {
@@ -16,7 +18,7 @@ function install_ros_kinetic {
     sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 
     # make sure packages are updated
-    sudo apt-get update
+    # sudo apt-get update
 
     #depending on the input argument, do the correct install
     if [ $1 == "full" ];
@@ -54,9 +56,9 @@ function install_terminator {
     sudo apt-get install -y terminator
 }
 
-function setup_python {
+function setup_python_etc {
     #install python packages
-    sudo apt-get install -y python-numpy python-rospy python-scipy python-matplotlib python-genpy
+    sudo apt-get install -y python-numpy python-rospy python-scipy python-matplotlib python-genpy python-pip python-dev build-essential vlc ssh gimp
     #install ipython
     sudo apt-get install -y ipython
 
@@ -105,10 +107,58 @@ function configure_git_repos {
     suod apt-get update
     sudo apt-get install -y git
     # clone byu classes repository
-    git clone https://github.com/kraudust/byu_classes.git
+    git clone https://github.com/kraudust/byu_classes.git ~/git/personal_git/byu_classes
+    cd ~/git/personal_git/byu_classes
+    git config --global user.name "Dustan Kraus"
+    git config --global user.email "dustan.kraus@gmail.com"
+    git config --global credential.https://github.com.username kraudust
+    # clone byu repositories
+    git clone https://kraudust@bitbucket.org/byu_rad_lab/cur_devel.git ~/git/byu/cur_devel
+    cd ~/git/byu/cur_devel
+    git config --global user.name "Dustan Kraus"
+    git config --global user.email "dustan.kraus@byu.edu"
+}
+
+function install_trac_ik {
+    sudo apt-get install -y ros-kinetic-trac-ik
+}
+
+function install_swig {
+    sudo apt-get install -y swig3.0
+}
+
+function install_boost {
+    sudo apt-get install -y libboost-all-dev
+}
+
+function install_sympybotics {
+    sudo apt-get install -y python-setuptools
+
+    cd ~/git
+    git clone git://github.com/sympy/sympy.git
+    cd sympy
+    sudo python setup.py install
+
+    cd ~/git
+    mkdir cdsousa
+    cd cdsousa
+
+    #must have .ssh key generated, find way to automatically check this
+    git clone https://github.com/cdsousa/SymPyBotics.git
+    cd SymPyBotics
+    sudo python setup.py install
+}
+
+function install_latex {
+    # sudo add-apt-repository ppa:jonathonf/texlive-2016
+    # sudo apt update
+    sudo apt-get install -y texlive-full
+    sudo apt-get install -y texmaker
 }
 
 function setupMachine {
+    configure_git_repos
+    wait
     install_vim
     wait
     configure_dot_files
@@ -119,11 +169,21 @@ function setupMachine {
     wait
     # install_graphic_card_drivers
     # wait
-    setup_python
+    setup_python_etc
     wait
     install_nlopt
     wait
     install_chrome
+    wait
+    install_trac_ik
+    wait
+    install_swig
+    wait
+    install_boost
+    wait
+    install_sympybotics
+    wait
+    install_latex
     wait
     # install_atom
     # wait
