@@ -109,7 +109,7 @@ fi
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 # Stuff I add -----------------------------------------------------------------------------------------
-if [ -f ~/git/personal_git/computer_setup/.bash_aliases ]; then
+if [ -f ~/computer_setup/.bash_aliases ]; then
     . ~/computer_setup/.bash_aliases
 fi
 

@@ -1,7 +1,8 @@
 function install_vim {
+    sudo apt-get update
     sudo apt-get install -y vim
     # install Vundle if it isn't installed
-    if [ ! -f ~/computer_setup/.vim/bundle/Vundle.vim ]; then
+    if [ ! -e ~/computer_setup/.vim/bundle/Vundle.vim ]; then
         echo "Installing Vundle"
         cd ~/computer_setup
         git clone https://github.com/VundleVim/Vundle.vim.git ~/computer_setup/.vim/bundle/Vundle.vim
@@ -94,9 +95,11 @@ function configure_dot_files {
 	dir=~/computer_setup # directory containing dot files (name of git repo w/ them)
 	olddir=~/dotfiles_old # move current dot files on machine to this directory
 	files=".bashrc .vimrc .vim" # list of files/folders to symlink in home directory
-	echo "Creating $olddir for backup of any existing dotfiles in ~"
-	mkdir -p $olddir
-	echo "...done"
+	if [ ! -e $olddir ]; then
+		echo "Creating $olddir for backup of any existing dotfiles in ~"
+		mkdir -p $olddir
+		echo "...done"
+	fi
 	echo "Changing to the $dir directory"
 	cd $dir
 	echo "...done"
@@ -112,7 +115,7 @@ function configure_dot_files {
 
 function configure_git_repos {
     # install git
-    suod apt-get update
+    sudo apt-get update
     sudo apt-get install -y git
     # clone byu classes repository
     git clone https://github.com/kraudust/byu_classes.git ~/git/personal_git/byu_classes
@@ -193,8 +196,8 @@ function install_spotify {
 }
 
 function setupMachine {
-    configure_git_repos
-    wait
+    # configure_git_repos
+    # wait
     install_vim
     wait
     configure_dot_files
