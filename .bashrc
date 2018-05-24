@@ -114,9 +114,10 @@ if [ -f ~/computer_setup/.bash_aliases ]; then
 fi
 
 # Source ROS change version if necessary
-# source /opt/ros/kinetic/setup.bash
+source /opt/ros/kinetic/setup.bash
+source ~/Desktop/catkin_ws/devel/setup.bash --extend # source netft
 # source /opt/ros/jade/setup.bash
-# source ~/git/byu/cur_devel/super_catkin_make.sh
-# mega_source
+source ~/git/byu/cur_devel/super_catkin_make.sh
+mega_source
 export HOLODECKPATH="/usr/local/Holodeck"
 export PYTHONPATH="${HOLODECKPATH}:${PYTHONPATH}"
