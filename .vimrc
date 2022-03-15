@@ -1,28 +1,25 @@
-"#Set things up for vundle
-" Run the following git clone command
-" git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-" Run the following command to install plugins after adding line to .vimrc
-" :PluginInstall
+" How to use Plug plugin manager
+" if you haven't installed plug yet, enter the following in the command line:
+" curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+" Run the following command to install plugins after adding plugin line to .vimrc
+" :PlugInstall
 " Run the following command to update plugins
-" :PluginUpdate or :PluginInstall!
+" :PlugUpdate
 " Run the following command to delete plugins after removing line from .vimrc
-" :PluginClean
+" :PlugClean
 
 set nocompatible
-filetype off
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-
-Plugin 'VundleVim/Vundle.vim'
+call plug#begin()
 
 " toggles comments with gc
-Plugin 'tpope/vim-commentary.git'
+Plug 'tpope/vim-commentary'
 
 " Easy Motion
-Plugin 'easymotion/vim-easymotion'
+Plug 'easymotion/vim-easymotion'
 
 " All of your Plugins must be added before the following line
-call vundle#end()
+call plug#end()
+
 filetype plugin indent on
 
 set backspace=2 "make it work like other aps(?)
@@ -180,7 +177,9 @@ map <leader>w oraw_input("break")<ESC>
 command! -nargs=1 SS let @/ = '\V'.escape(<q-args>, '\')
 
 syntax enable
-colorscheme monokai
+set background=dark
+let g:solarized_termcolors=256
+colorscheme solarized
 
 " Added to make it so can cut and paste from different terminals must have
 " vim-gnome installed
