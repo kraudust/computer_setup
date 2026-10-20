@@ -37,13 +37,13 @@ fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
-    xterm-color) color_prompt=yes;;
+    xterm-color|*-256color) color_prompt=yes;;
 esac
 
 # uncomment for a colored prompt, if the terminal has the capability; turned
 # off by default to not distract the user: the focus in a terminal window
 # should be on the output of commands, not on the prompt
-force_color_prompt=yes
+#force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
     if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
@@ -84,6 +84,9 @@ if [ -x /usr/bin/dircolors ]; then
     alias egrep='egrep --color=auto'
 fi
 
+# colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
 # some more ls aliases
 alias ll='ls -alF'
 alias la='ls -A'
@@ -92,6 +95,15 @@ alias l='ls -CF'
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -104,19 +116,57 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-# Stuff I add -----------------------------------------------------------------------------------------
-if [ -f ~/computer_setup/.bash_aliases ]; then
-    . ~/computer_setup/.bash_aliases
+# Git
+# Show what git or hg branch we are in
+function parse_vc_branch_and_add_brackets {
+    gitbranch=git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\ \[\1\]/'
+    if [[ "$gitbranch" != '' ]]; then
+	echo $gitbranch
+    else
+	hg branch 2> /dev/null | awk '{print $1 }'
+    fi
+}
+
+# Set terminal prompt
+if [ -n "$SSH_CLIENT" ]; then
+    export PS1="\[\033[1;33m\][\u]\[\033[0m\]\[\033[0;34m\]\$(parse_vc_branch_and_add_brackets)\[\033[0m\]\[\033[1;32m\]\W $ \[\033[0m\]"
+else
+    export PS1="\[\033[0;34m\]\$(parse_vc_branch_and_add_brackets)\[\033[0m\]\[\033[1;32m\]\W $ \[\033[0m\]"
 fi
 
-# Source ROS change version if necessary
-source /opt/ros/kinetic/setup.bash
-# source /opt/ros/jade/setup.bash
-source ~/git/byu/cur_devel/super_catkin_make.sh
-mega_source
-export HOLODECKPATH="/usr/local/Holodeck"
-export PYTHONPATH="${HOLODECKPATH}:${PYTHONPATH}"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH=/usr/local/cuda-13.2/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-13.2/lib64:$LD_LIBRARY_PATH
+source /usr/share/doc/fzf/examples/key-bindings.bash
+source /usr/share/bash-completion/completions/fzf
+
+export CODEX_SANDBOX_DIR="$HOME/git/gitlab/codex_sandbox"
+
+omni-to-sandbox() {
+    if [[ $# -lt 1 || ! -d "$1" ]]; then
+        echo "Usage: omni-to-sandbox REPO_PATH [--dry-run]"
+        return 1
+    fi
+    local repo
+    repo="$(realpath -- "$1")" || return 1
+    shift
+
+    rsync -avi --no-links --no-devices --no-specials \
+        --exclude-from="$CODEX_SANDBOX_DIR/rsync-excludes.txt" \
+        "$@" "$repo/" "$CODEX_SANDBOX_DIR/"
+}
+
+sandbox-to-omni() {
+    if [[ $# -lt 1 || ! -d "$1" ]]; then
+        echo "Usage: sandbox-to-omni REPO_PATH [--dry-run]"
+        return 1
+    fi
+    local repo
+    repo="$(realpath -- "$1")" || return 1
+    shift
+
+    rsync -avi --no-links --no-devices --no-specials \
+        --exclude-from="$CODEX_SANDBOX_DIR/rsync-excludes.txt" \
+        "$@" "$CODEX_SANDBOX_DIR/" "$repo/"
+}
