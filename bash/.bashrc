@@ -119,7 +119,7 @@ fi
 # Git
 # Show what git or hg branch we are in
 function parse_vc_branch_and_add_brackets {
-    gitbranch=git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\ \[\1\]/'
+    gitbranch=`git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\ \[\1\]/'`
     if [[ "$gitbranch" != '' ]]; then
 	echo $gitbranch
     else
