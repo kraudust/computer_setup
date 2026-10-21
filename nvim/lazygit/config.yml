@@ -4,6 +4,6 @@ gui:
   border: rounded
   scrollHeight: 1
 git:
-  pagers:
+  diffRenderers:
     - colorArg: always
-      pager: delta-auto --paging=never
+      command: delta-auto --paging=never
