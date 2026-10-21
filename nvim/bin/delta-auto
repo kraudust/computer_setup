@@ -1,0 +1,7 @@
+#!/bin/sh
+# delta wrapper that follows macOS appearance (same check nvim's colorscheme.lua uses).
+# Used as lazygit's pager so diffs don't paint dark backgrounds in light mode.
+if [ "$(uname)" = Darwin ] && ! defaults read -g AppleInterfaceStyle 2>/dev/null | grep -q Dark; then
+  exec delta --light --syntax-theme GitHub "$@"
+fi
+exec delta --dark --syntax-theme gruvbox-dark "$@"

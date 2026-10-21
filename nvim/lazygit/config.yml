@@ -1,0 +1,9 @@
+# Neovim passes this file explicitly on both macOS and Linux.
+# Edits from lazygit's `e` are handled by flatten.nvim via $EDITOR=nvim.
+gui:
+  border: rounded
+  scrollHeight: 1
+git:
+  pagers:
+    - colorArg: always
+      pager: delta-auto --paging=never

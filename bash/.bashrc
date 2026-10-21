@@ -170,3 +170,4 @@ sandbox-to-omni() {
         --exclude-from="$CODEX_SANDBOX_DIR/rsync-excludes.txt" \
         "$@" "$CODEX_SANDBOX_DIR/" "$repo/"
 }
+export PATH="$HOME/.local/bin:/usr/lib/go-1.26/bin:$PATH"
