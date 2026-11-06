@@ -3,7 +3,7 @@ return {
 	event = "BufWritePre",
 	keys = {
 		{
-			"<leader>f",
+			"<leader>cf",
 			function()
 				-- Fall back to LSP formatting when no external formatter (e.g.
 				-- oxfmt) is installed, matching format_on_save behavior.

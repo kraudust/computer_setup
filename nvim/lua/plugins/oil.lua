@@ -3,7 +3,7 @@ return {
 	lazy = false,
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 	keys = {
-		{ "<leader>pv", "<cmd>Oil<cr>", desc = "Open file explorer" },
+		{ "<leader>e", "<cmd>Oil<cr>", desc = "Open file explorer" },
 		{ "-", "<cmd>Oil<cr>", desc = "Open parent directory" },
 	},
 	opts = {
@@ -13,6 +13,11 @@ return {
 			{ "mtime", format = "%Y-%m-%d %H:%M" },
 		},
 		keymaps = {
+			-- Reserve Ctrl-h/j/k/l for window navigation in every file browser.
+			["<C-h>"] = false,
+			["<C-l>"] = false,
+			["<C-x>"] = { "actions.select", opts = { horizontal = true } },
+			["gr"] = "actions.refresh",
 			["<leader>yf"] = {
 				callback = function()
 					local dir = require("oil").get_current_dir()

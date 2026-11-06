@@ -1,16 +1,24 @@
+local function picker(name)
+	return function() require("telescope.builtin")[name]() end
+end
+
 return {
-	'nvim-telescope/telescope.nvim', version = '*',
+	"nvim-telescope/telescope.nvim", version = "*",
 	dependencies = {
-		'nvim-lua/plenary.nvim',
-		{ 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
+		"nvim-lua/plenary.nvim",
+		{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	},
 	keys = {
-		{ '<leader>pf', function() require('telescope.builtin').find_files() end, desc = 'Telescope find files' },
-		{ '<leader>gf', function() require('telescope.builtin').git_files() end, desc = 'Telescope find git files' },
-		{ '<leader>pg', function() require('telescope.builtin').live_grep() end, desc = 'Telescope live grep' },
-		-- { '<leader>ps', function() require('telescope.builtin').grep_string( {search = vim.fn.input("Grep > ") }); end, desc = 'Telescope find files' },
-		{ '<leader>bf', function() require('telescope.builtin').buffers() end, desc = 'Telescope buffers' },
-		{ '<C-e>', function() require('telescope.builtin').oldfiles() end, desc = 'Telescope recent files' },
-		-- { '<leader>fh', function() require('telescope.builtin').help_tags() end, desc = 'Telescope help tags' },
+		{ "<leader><space>", picker("find_files"), desc = "Find files (cwd)" },
+		{ "<leader>ff", picker("find_files"), desc = "Find files (cwd)" },
+		{ "<leader>fg", picker("git_files"), desc = "Find Git files" },
+		{ "<leader>/", picker("live_grep"), desc = "Grep (cwd)" },
+		{ "<leader>sg", picker("live_grep"), desc = "Grep (cwd)" },
+		{ "<leader>,", picker("buffers"), desc = "Buffers" },
+		{ "<leader>fb", picker("buffers"), desc = "Buffers" },
+		{ "<leader>fr", picker("oldfiles"), desc = "Recent files" },
+		{ "<leader>sh", picker("help_tags"), desc = "Search help" },
+		{ "<leader>sk", picker("keymaps"), desc = "Search keymaps" },
+		{ "<leader>sd", picker("diagnostics"), desc = "Search diagnostics" },
 	},
 }

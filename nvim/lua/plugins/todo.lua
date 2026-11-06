@@ -120,7 +120,8 @@ local Todo = {}
 
 set_keymaps = function(buf)
 	local function map(lhs, fn)
-		vim.keymap.set("n", lhs, fn, { buffer = buf, silent = true, nowait = true })
+		-- Let global buffer mappings and lazygit complete after leader-b/leader-l.
+		vim.keymap.set("n", lhs, fn, { buffer = buf, silent = true, nowait = lhs ~= "<leader>b" and lhs ~= "<leader>l" })
 	end
 	map("q", function() Todo.close() end)
 	map("<leader>d", function() apply(function(l, n) return core.mark_done(l, n, today_tbl()) end) end)
