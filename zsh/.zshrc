@@ -44,3 +44,4 @@ alias ssh='kitty +kitten ssh'
 function cd() {
     builtin cd "$@" && ls -larth
 }
+export PATH="$HOME/.local/bin:$PATH"
