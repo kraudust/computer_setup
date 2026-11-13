@@ -50,10 +50,10 @@ Kitty's defaults can vary somewhat by version and platform. This README lists th
 | `Ctrl+Shift+P` | Open a vertical split (panes side by side) using `split_local.py` |
 | `Ctrl+Shift+O` | Open a horizontal split (one pane above the other) using `split_local.py` |
 | `Ctrl+Shift+T` | Open a new tab using `split_local.py` |
-| `Ctrl+Shift+H` | Focus the pane to the left |
+| `Ctrl+Shift+H` | Focus the pane to the left; in stack layout, cycle to the previous pane |
 | `Ctrl+Shift+J` | Focus the pane below |
 | `Ctrl+Shift+K` | Focus the pane above |
-| `Ctrl+Shift+L` | Focus the pane to the right |
+| `Ctrl+Shift+L` | Focus the pane to the right; in stack layout, cycle to the next pane |
 | `Ctrl+Shift+Alt+H` | Make the active pane narrower by 5 Kitty resize units |
 | `Ctrl+Shift+Alt+L` | Make the active pane wider by 5 Kitty resize units |
 | `Ctrl+Shift+Alt+K` | Make the active pane shorter by 5 Kitty resize units |
@@ -61,7 +61,7 @@ Kitty's defaults can vary somewhat by version and platform. This README lists th
 | `Ctrl+Shift+W` | Close the active pane/window |
 | `Ctrl+Shift+Z` | Zoom the active pane using stack layout; press again to restore splits |
 
-Resize units are Kitty's pane sizing units, not pixels. Directional pane navigation is intended for the splits layout.
+Resize units are Kitty's pane sizing units, not pixels. The `navigate_panes.py` helper keeps H/L navigation directional in splits and circular in stack layout, wrapping at either end. J/K remain directional.
 
 ### Tabs
 
@@ -126,10 +126,10 @@ The following custom mappings replace built-in Kitty actions on the same key com
 | `Ctrl+Shift+P` | Starts Kitty's multi-key hints shortcuts (for example, selecting a path, line, or URL, depending on the next key) | Opens a vertical split via `split_local.py` |
 | `Ctrl+Shift+O` | Passes the current selection to a program / selection-handling action | Opens a horizontal split via `split_local.py` |
 | `Ctrl+Shift+T` | Opens a new tab | Opens a new tab via `split_local.py`, to preserve the intended local-shell behavior |
-| `Ctrl+Shift+H` | Shows scrollback | Focuses the pane to the left |
+| `Ctrl+Shift+H` | Shows scrollback | Focuses left in splits; cycles backward in stack |
 | `Ctrl+Shift+J` | Scrolls down one line | Focuses the pane below |
 | `Ctrl+Shift+K` | Scrolls up one line | Focuses the pane above |
-| `Ctrl+Shift+L` | Cycles to the next layout | Focuses the pane to the right |
+| `Ctrl+Shift+L` | Cycles to the next layout | Focuses right in splits; cycles forward in stack |
 | `Ctrl+Shift+[` | Focuses the previous pane/window in the current tab | Goes to the previous tab |
 | `Ctrl+Shift+]` | Focuses the next pane/window in the current tab | Goes to the next tab |
 | `Ctrl+Shift+1` | Focuses pane/window 1 | Switches to Gruvbox Dark Hard |

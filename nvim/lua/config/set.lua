@@ -30,6 +30,14 @@ vim.opt.isfname:append("@-@")
 -- pause; 250ms still feels instant and does far less work on battery.
 vim.opt.updatetime = 250
 
+-- Reload external edits when returning to a buffer or pausing in normal mode.
+vim.opt.autoread = true
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
+	callback = function()
+		vim.cmd("checktime")
+	end,
+})
+
 -- vim.opt.clipboard = "unnamedplus"
 
 vim.opt.mouse = "a"
