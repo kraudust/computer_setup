@@ -3,7 +3,18 @@ return {
 	lazy = false,
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 	keys = {
-		{ "<leader>e", "<cmd>Oil<cr>", desc = "Open file explorer" },
+		{
+			"<leader>e",
+			function()
+				local oil = require("oil")
+				if vim.bo.filetype == "oil" then
+					oil.close()
+				else
+					oil.open()
+				end
+			end,
+			desc = "Toggle file explorer",
+		},
 		{ "-", "<cmd>Oil<cr>", desc = "Open parent directory" },
 	},
 	opts = {

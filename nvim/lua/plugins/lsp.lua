@@ -60,21 +60,12 @@ return {
 			float = { source = true },
 		})
 
-		vim.api.nvim_create_autocmd("BufWritePre", {
-			callback = function(ev)
-				local clients = vim.lsp.get_clients({ bufnr = ev.buf, name = "eslint" })
-				if #clients > 0 then
-					vim.cmd("silent! EslintFixAll")
-				end
-			end,
-		})
-
 		vim.api.nvim_create_autocmd("LspAttach", {
 			callback = function(ev)
 				local function opts(desc)
 					return { buffer = ev.buf, remap = false, desc = desc }
 				end
-				vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts("Go to definition"))
+				vim.keymap.set("n", "gd", function() require("util.source_index").definition() end, opts("Go to definition (source/LSP)"))
 				vim.keymap.set("n", "K", function() vim.lsp.buf.hover({ border = "single" }) end, opts("Hover documentation"))
 				vim.keymap.set("n", "<leader>sS", vim.lsp.buf.workspace_symbol, opts("Workspace symbol search"))
 				vim.keymap.set("n", "<leader>cd", vim.diagnostic.open_float, opts("Open diagnostic float"))

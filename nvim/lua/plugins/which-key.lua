@@ -9,6 +9,7 @@ return {
 			{ "<leader>w", group = "windows" },
 			{ "<leader>c", group = "code" },
 			{ "<leader>g", group = "Git" },
+			{ "<leader>m", group = "Markdown" },
 			{ "<leader><Tab>", group = "tabs" },
 			{ "<leader>t", group = "tasks" },
 		},

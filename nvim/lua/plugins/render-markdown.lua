@@ -1,9 +1,19 @@
 return {
 	"MeanderingProgrammer/render-markdown.nvim",
-	enabled = false,
 	ft = { "markdown" },
+	cmd = "RenderMarkdown",
+	keys = {
+		{
+			"<leader>mr",
+			function() require("render-markdown").buf_toggle() end,
+			ft = "markdown",
+			desc = "Toggle Markdown rendering",
+		},
+	},
 	dependencies = { "nvim-treesitter/nvim-treesitter" },
 	opts = {
+		-- Load the plugin, but keep every buffer raw until explicitly toggled.
+		enabled = false,
 		render_modes = true,
 		anti_conceal = {
 			enabled = true,

@@ -8,6 +8,24 @@ return {
 		"nvim-lua/plenary.nvim",
 		{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	},
+	opts = {
+		defaults = {
+			mappings = {
+				i = { ["<C-s>"] = "select_horizontal" },
+				n = { ["<C-s>"] = "select_horizontal" },
+			},
+		},
+		pickers = {
+			find_files = {
+				hidden = true,
+				file_ignore_patterns = { "^%.git/", "/%.git/" },
+			},
+		},
+	},
+	config = function(_, opts)
+		require("telescope").setup(opts)
+		require("telescope").load_extension("fzf")
+	end,
 	keys = {
 		{ "<leader><space>", picker("find_files"), desc = "Find files (cwd)" },
 		{ "<leader>ff", picker("find_files"), desc = "Find files (cwd)" },

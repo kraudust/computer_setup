@@ -3,6 +3,9 @@
 -- Leader groups: f = files, s = search, b = buffers, w = windows,
 -- c = code, g = Git, <Tab> = tabs, t = custom tasks.
 
+-- LazyGit is an external program; its launcher does not require a Git plugin.
+vim.keymap.set("n", "<leader>lg", function() require("util.lazygit").open() end, { desc = "Open lazygit" })
+
 vim.keymap.set("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 
 vim.keymap.set("v", "J", function()

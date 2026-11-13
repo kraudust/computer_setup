@@ -1,40 +1,33 @@
 # Kitty Configuration
 
-A keyboard-driven Kitty terminal configuration for macOS and Linux. It uses **splits and tabs** (no stack layout), manual color-theme switching, and a helper script for opening a local shell even when the current terminal is connected to a remote host over SSH.
+A keyboard-driven Kitty terminal configuration for macOS and Linux. It uses **splits and tabs**, with a stack-layout zoom toggle, manual color-theme switching, and a helper script for opening a local shell even when the current terminal is connected to a remote host over SSH.
 
 ## Files
 
 | File | Purpose |
 |---|---|
 | `kitty.conf` | Main settings and custom keyboard shortcuts |
-| `VSCode_Dark.conf` | Default dark theme |
+| `VSCode_Dark.conf` | Alternate dark theme |
 | `day.conf` | Light theme |
-| `gruvbox-dark-hard.conf` | Optional Gruvbox Dark Hard theme |
+| `gruvbox-dark-hard.conf` | Default Gruvbox Dark Hard theme |
 | `split_local.py` | Opens a new local shell in the current local working directory, including when the active pane is connected to a remote host over SSH |
 
 ## Installation
 
-The repository is checked out at `~/git/computer_setup`, and this configuration lives in `~/git/computer_setup/kitty`.
-
-If `~/.config/kitty` does not already exist, symlink the repository's `kitty` directory:
+From your checkout, link the configuration directory (adjust the checkout path):
 
 ```sh
-ln -s ~/git/computer_setup/kitty ~/.config/kitty
+cd /path/to/computer_setup
+mkdir -p ~/.config
+if [ -e ~/.config/kitty ] || [ -L ~/.config/kitty ]; then
+  mv ~/.config/kitty "$HOME/.config/kitty.backup.$(date +%Y%m%d-%H%M%S)"
+fi
+ln -s "$(pwd)/kitty" ~/.config/kitty
 ```
-
-If `~/.config/kitty` already exists as a real directory, back it up or remove it before creating the directory symlink. For example, if it only contains an old `kitty.conf` symlink that you no longer need:
-
-```sh
-rm ~/.config/kitty/kitty.conf
-rmdir ~/.config/kitty
-ln -s ~/git/computer_setup/kitty ~/.config/kitty
-```
-
-Removing the old symlink does not delete the file it points to. Inspect the target first if you want to keep it.
 
 With the directory symlink in place, new files added to the repository's `kitty` directory are available through `~/.config/kitty`.
 
-The configured font is **JetBrainsMono Nerd Font Mono**, size **11**. Install that font on each machine for the intended appearance.
+The configured font is **JetBrainsMono Nerd Font Mono**, size **12**. Install that font on each machine for the intended appearance.
 
 Reload the configuration with `Ctrl+Shift+F5`.
 
@@ -66,6 +59,7 @@ Kitty's defaults can vary somewhat by version and platform. This README lists th
 | `Ctrl+Shift+Alt+K` | Make the active pane shorter by 5 Kitty resize units |
 | `Ctrl+Shift+Alt+J` | Make the active pane taller by 5 Kitty resize units |
 | `Ctrl+Shift+W` | Close the active pane/window |
+| `Ctrl+Shift+Z` | Zoom the active pane using stack layout; press again to restore splits |
 
 Resize units are Kitty's pane sizing units, not pixels. Directional pane navigation is intended for the splits layout.
 
@@ -86,11 +80,19 @@ A tab can contain multiple panes. Pane navigation affects windows within the cur
 
 | Shortcut | Action |
 |---|---|
-| `Ctrl+Shift+1` | Switch to VS Code Dark |
+| `Ctrl+Shift+1` | Switch to Gruvbox Dark Hard (`gruvbox-dark-hard.conf`) |
 | `Ctrl+Shift+2` | Switch to the light theme (`day.conf`) |
-| `Ctrl+Shift+3` | Switch to Gruvbox Dark Hard (`gruvbox-dark-hard.conf`) |
+| `Ctrl+Shift+3` | Switch to VS Code Dark (`VSCode_Dark.conf`) |
 
-VS Code Dark is loaded at startup. Theme switching is manual; the configuration does not automatically follow the operating system's light/dark appearance. Kitty's `set_colors` action changes colors for the active Kitty window, so apply the theme to each window that should use it.
+Gruvbox Dark Hard is loaded at startup. Theme switching is manual and does not
+follow the operating system. `set_colors --all --configured` updates all existing
+Kitty windows and the defaults for new windows in that running instance. It does
+not rewrite `kitty.conf`; a fresh launch starts with Gruvbox again.
+
+Neovim uses Gruvbox for `background=dark` and GitHub Light for `background=light`,
+with a transparent background. If an open editor does not follow a Kitty theme
+change, run `:set background=light` or `:set background=dark`. On macOS, Neovim
+also rechecks the OS appearance on focus. See the [Neovim guide](../nvim/README.md#configuration-files-data-and-portability).
 
 ## Kitty defaults that remain useful
 
@@ -130,14 +132,15 @@ The following custom mappings replace built-in Kitty actions on the same key com
 | `Ctrl+Shift+L` | Cycles to the next layout | Focuses the pane to the right |
 | `Ctrl+Shift+[` | Focuses the previous pane/window in the current tab | Goes to the previous tab |
 | `Ctrl+Shift+]` | Focuses the next pane/window in the current tab | Goes to the next tab |
-| `Ctrl+Shift+1` | Focuses pane/window 1 | Switches to VS Code Dark |
+| `Ctrl+Shift+1` | Focuses pane/window 1 | Switches to Gruvbox Dark Hard |
 | `Ctrl+Shift+2` | Focuses pane/window 2 | Switches to the light theme |
-| `Ctrl+Shift+3` | Focuses pane/window 3 | Switches to Gruvbox Dark Hard |
+| `Ctrl+Shift+3` | Focuses pane/window 3 | Switches to VS Code Dark |
 | `Ctrl+Shift+R` | Starts interactive pane resizing | Renames the current tab |
 
 `Ctrl+Shift+W` is explicitly mapped to `close_window`, which is also Kitty's standard default action for closing the active pane/window, so its behavior is unchanged.
 
-**Important:** `Ctrl+Shift+F` is no longer mapped in this configuration. The old custom stack-layout toggle has been removed, and Kitty's default action—moving the active pane forward in the window order—remains available. This configuration enables only the `splits` layout.
+`Ctrl+Shift+F` is not mapped here, so Kitty's default pane-order action remains
+available. The zoom toggle is `Ctrl+Shift+Z`; both `splits` and `stack` are enabled.
 
 ## Local shells from SSH sessions
 
@@ -153,11 +156,10 @@ This is intentional: use these mapped shortcuts when you want a new local termin
 
 ## Layout and appearance
 
-- **Layout:** `splits` only; there is no stack-layout toggle.
-- **Font:** JetBrainsMono Nerd Font Mono, 11.
-- **Pane borders:** Minimal borders; blue active-pane border; dimmed inactive-pane text.
+- **Layout:** `splits` with `Ctrl+Shift+Z` toggling `stack` for zoom.
+- **Font:** JetBrainsMono Nerd Font Mono, 12; ligatures disabled.
+- **Pane borders:** Minimal borders; theme-defined colors; dimmed inactive-pane text.
 - **Window margins/padding:** Zero.
-- **Cursor:** Cursor trail enabled; blinking disabled.
 - **Scrollback:** Unlimited (`scrollback_lines -1`).
 - **Shell integration:** Enabled.
 - **Copy behavior:** Selecting text does not automatically copy it.

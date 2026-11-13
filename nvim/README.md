@@ -2,8 +2,8 @@
 
 A reference for the configuration in `computer_setup/nvim`, normally linked to
 `~/.config/nvim`. It uses lazy.nvim with individually configured plugins and
-LazyVim-style navigation. LazyGit stays on **`Space lg`**. Copilot and Markdown
-rendering are disabled; Markdown opens as source text with syntax highlighting.
+LazyVim-style navigation. LazyGit stays on **`Space lg`**. Markdown opens as raw
+source with syntax highlighting; **`Space mr`** toggles rendering for that buffer.
 
 ## Contents
 
@@ -16,14 +16,14 @@ rendering are disabled; Markdown opens as source text with syntax highlighting.
   - [Files, search, and jumping](#files-search-and-jumping)
   - [Language-server actions and completion](#language-server-actions-and-completion)
   - [Windows, buffers, and tabs](#windows-buffers-and-tabs)
-  - [Git, formatting, undo, and task entry points](#git-formatting-undo-and-task-entry-points)
+  - [Git, Markdown, and task entry points](#git-markdown-and-task-entry-points)
 - [Tool workflows and their local keys](#tool-workflows-and-their-local-keys)
   - [Editing several files side by side](#editing-several-files-side-by-side)
   - [Kitty panes versus Neovim windows](#kitty-panes-versus-neovim-windows)
   - [Oil: files and directories](#oil-files-and-directories)
   - [Telescope: find a file or text](#telescope-find-a-file-or-text)
   - [Lazygit: Git navigation and commits](#lazygit-git-navigation-and-commits)
-  - [Fugitive, Gitsigns, and undo history](#fugitive-gitsigns-and-undo-history)
+  - [Gitsigns and undo history](#gitsigns-and-undo-history)
   - [TODO and Markdown notes](#todo-and-markdown-notes)
 - [Installation](#installation)
   - [1A. Ubuntu 24.04: install dependencies](#1a-ubuntu-2404-install-dependencies)
@@ -43,6 +43,7 @@ rendering are disabled; Markdown opens as source text with syntax highlighting.
   - [Mason and language servers](#mason-and-language-servers)
   - [Formatting and diagnostics](#formatting-and-diagnostics)
   - [Treesitter and Markdown](#treesitter-and-markdown)
+  - [Source navigation without building](#source-navigation-without-building)
 - [Configuration files, data, and portability](#configuration-files-data-and-portability)
   - [Optional: replace an older manual Neovim install on Ubuntu](#optional-replace-an-older-manual-neovim-install-on-ubuntu)
 - [Troubleshooting](#troubleshooting)
@@ -73,8 +74,8 @@ Press `Esc` before Normal-mode shortcuts. Keys separated by spaces are sequentia
 | Close window / delete buffer | `Space wd` / `Space bd` |
 | Keep only current buffer | `Space bo` |
 | Save / quit | `:w` / `:q` |
-| Definition / references / hover | `gd` / `gr` / `K` with LSP attached |
-| Rename / code action / format | `Space cr` / `Space ca` / `Space cf` |
+| Definition / references / hover | `gd` (source/LSP); `gr` / `K` with LSP attached |
+| Rename / code action | `Space cr` / `Space ca` |
 | LazyGit / TODO | `Space lg` / `Space td` |
 | Search help / keymaps | `Space sh` / `Space sk` |
 | Plugin / tool manager | `:Lazy` / `:Mason` |
@@ -121,7 +122,9 @@ Tab operations use the `Space Tab` prefix. The top bar still displays tab pages.
 - Indentation is two spaces; tabs expand to spaces. Lines wrap at word boundaries.
 - Mouse support is on. Searches preview while typing, without persistent match highlighting.
 - Treesitter folds start open. `zc`, `zo`, and `za` close, open, and toggle folds.
-- Files are **not autosaved** generally. Formatting runs when you save.
+- Automatic diagnostic markers are hidden for every language; `Space sd` lists
+  diagnostics explicitly. Git change signs remain visible.
+- Files are **not autosaved** generally. No code formatter is configured.
   The TODO window saves its task file on close/leave.
 - Swap and backup files are off. Persistent undo is on in `~/.vim/undodir`.
 - Ordinary `y`, `d`, and `p` use Vim registers. They do not automatically use
@@ -141,7 +144,8 @@ takes precedence over a global one. All leader sequences begin with Space.
 | `Space b` | Buffers |
 | `Space w` | Windows |
 | `Space c` | Code |
-| `Space g` | Git status/blame |
+| `Space g` | Git changes, diffs, and blame |
+| `Space m` | Markdown |
 | `Space Tab` | Tabs |
 | `Space t` | Personal tasks |
 
@@ -167,7 +171,7 @@ Pause after a group prefix for which-key hints.
 | `Space p` | Visual | Replace selection without overwriting the yank register |
 | `Space d` + motion | Normal | Delete into the black-hole register; e.g. `Space d w` |
 | `Space d` | Visual | Delete selection without changing registers |
-| `Space dq` | Normal | Populate quickfix from diagnostics; open it with `:copen` |
+| `Space dq` | Normal | Populate and open quickfix from diagnostics |
 | `Ctrl-n` / `Ctrl-p` | Normal | Next/previous quickfix item; center cursor |
 | `Space n` / `Space p` | Normal | Next/previous location-list item |
 | `Q` | Normal | Disabled |
@@ -182,7 +186,8 @@ opens diagnostics; use `"_dd` to delete an entire line without saving it in a re
 
 | Key | Mode | Action |
 | --- | --- | --- |
-| `Space e`, `-` | Normal | Open Oil on the parent directory |
+| `Space e` | Normal | Toggle Oil: open the file's directory / return to the previous file |
+| `-` | Normal | Open Oil on the parent directory / go up a directory in Oil |
 | `Space Space` / `Space ff` | Normal | Telescope: find files in cwd |
 | `Space fg` | Normal | Telescope: Git-tracked files |
 | `Space /` / `Space sg` | Normal | Telescope: live grep of file contents in cwd |
@@ -201,17 +206,19 @@ Aliases: `Space Space` finds files, `Space /` searches text, and `Space ,`
 browses buffers. `Space sh` searches help, `Space sk` searches keymaps, and
 `Space sd` searches diagnostics. These use Telescope; file searches retain the
 current working directory rather than LazyVim's automatic project-root behavior.
-`Space e` opens Oil, and `-` still opens the current file's parent directory.
+`Space e` toggles Oil open/closed. `-` opens the current file's parent directory
+or goes up a directory when already in Oil.
 
 ### Language-server actions and completion
 
-The LSP actions through signature help are installed **when a server attaches
-to a buffer**. Their availability depends on that server's capabilities. Completion
+Except for `gd` and `Space cD`, the LSP actions through signature help are installed
+**when a server attaches to a buffer**. Their availability depends on that server's capabilities. Completion
 loads on Insert mode independently; diagnostic quickfix (`Space dq`) is global.
 
 | Key | Mode | Action |
 | --- | --- | --- |
-| `gd` | Normal | Go to definition through the LSP |
+| `gd` | Normal | C/C++: source index first, then LSP; other languages: LSP first, then source index |
+| `Space cD` | Normal | Find definition using only the source index (`D` is uppercase) |
 | `K` | Normal | Hover documentation |
 | `Space sS` | Normal | Workspace-symbol search |
 | `Space ca` | Normal | Code action |
@@ -225,9 +232,23 @@ loads on Insert mode independently; diagnostic quickfix (`Space dq`) is global.
 | `Ctrl-e` | Insert | Abort completion |
 | `Enter` | Insert | Accept completion; selects an item if none is selected |
 | `Ctrl-y` | Insert | nvim-cmp preset: accept the selected completion |
+| `Ctrl-j` / `Ctrl-k` | Insert, Select | Next/previous placeholder in the active snippet |
 
-`Tab` has no custom completion/snippet mapping with Copilot disabled. These are
+`Tab` has no custom completion/snippet mapping. These are
 completion keys, not the Normal-mode quickfix or recent-file commands.
+
+Friendly-snippets supplies language-specific templates through LuaSnip and
+cmp_luasnip. Lazy installs the collection as a dependency; snippets load when
+their filetype is used. Restart after pulling this configuration and allow Lazy
+to finish installing missing plugins. Commit the resulting `lazy-lock.json`
+entry when intentionally updating snippets. The collection is already pinned in
+this repository; use `:Lazy restore` on other computers.
+
+To try it, open a Python file, enter Insert mode, and type `def` or `class`.
+Press `Ctrl-Space` if needed, choose an entry labeled `[Snippet]` with `Ctrl-n/p`,
+and press `Enter`. Type into the selected placeholder, then use `Ctrl-j` to
+advance or `Ctrl-k` to go back. These mappings apply only in Insert/Select mode;
+Normal-mode split navigation and Kitty's `Ctrl-Shift-j/k` remain unchanged.
 
 ### Windows, buffers, and tabs
 
@@ -243,14 +264,15 @@ completion keys, not the Normal-mode quickfix or recent-file commands.
 | `Space Tab Tab` / `Space Tab d` / `Space Tab o` | Normal | New tab / close tab / close other tabs |
 | `Space Tab [` / `Space Tab ]` | Normal | Previous/next tab |
 
-### Git, formatting, undo, and task entry points
+### Git, Markdown, and task entry points
 
 | Key | Mode | Action |
 | --- | --- | --- |
 | `Space lg` | Normal | Open lazygit (personal preference; `Space gg` is unassigned) |
-| `Space gs` / `Space gb` | Normal | Fugitive status / blame |
-| `Space cf` | Normal | Format current buffer |
-| `Space u` | Normal | Toggle Undotree |
+| `Space gb` | Normal | Gitsigns blame panel |
+| `]c` / `[c` | Normal | Next/previous Git change |
+| `Space gp` / `Space gd` | Normal | Inline Git change preview / vertical diff against the index |
+| `Space mr` | Normal, Markdown | Toggle rendering for the current buffer |
 | `Space td` / `Space ta` / `Space ts` | Normal | TODO / archive / AI summary |
 
 Task-window shortcuts are listed under [TODO and Markdown notes](#todo-and-markdown-notes).
@@ -264,7 +286,7 @@ Task-window shortcuts are listed under [TODO and Markdown notes](#todo-and-markd
 
 1. Start `nvim` in the project directory. `Space Space` finds your first file.
 2. Use `Space Space` again, select another file, and press `Ctrl-v` to open it
-   beside the first, or `Ctrl-x` to open it above/below using Telescope's defaults.
+   beside the first, or `Ctrl-s` (also `Ctrl-x`) for a horizontal split.
 3. `Ctrl-h/j/k/l` moves between editor windows. `Space ,` picks a buffer for
    the active window; `H`/`L` cycles listed buffers.
 4. `Space bd` removes a buffer while keeping the layout; save changes first.
@@ -309,8 +331,11 @@ kitty @ --to "$KITTY_LISTEN_ON" load-config
 
 ### Oil: files and directories
 
-Open with `Space e` or `-`, navigate with `j/k`, and press `Enter` to open an
-entry. Hidden files are shown. Sorting starts with directories first, then newest
+`Space e` opens the directory in the **current window**, replacing its displayed
+buffer with Oil. Press `Space e` again from Oil to return to the previous buffer,
+or `Ctrl-c` in Normal mode to close it. `-` opens the parent directory and moves
+up another directory when already in Oil. Navigate with `j/k`, then `Enter` to
+open an entry. Hidden files are shown. Sorting starts with directories first, then newest
 modification time. Oil's buffer is editable: change a filename to rename it,
 add a line to create an entry (`name/` for a directory), or delete a line to
 request removal. **`:w` applies the filesystem operations** after Oil's prompts;
@@ -322,7 +347,7 @@ editing the listing is not just changing a text document.
 | `-` / `_` | Parent directory / Neovim's working directory |
 | `Ctrl-s` / `Ctrl-x` / `Ctrl-t` | Open entry in vertical split / horizontal split / tab |
 | `Ctrl-p` | Preview entry |
-| `Ctrl-c` | Close Oil in Normal mode |
+| `Space e` / `Ctrl-c` | Close Oil and return to the previous buffer in Normal mode |
 | `gr` | Refresh listing |
 | `g.` | Toggle hidden files |
 | `gx` | Open entry with the system's external application |
@@ -347,8 +372,10 @@ with `:cd /path/to/project` if you are searching the wrong tree.
 | Key in a picker | Action |
 | --- | --- |
 | `Ctrl-n/p` or arrows | Move through results while typing |
+| `j` / `k` after `Esc` | Move down/up in the picker's Normal mode |
 | `Enter` | Open selection |
-| `Ctrl-x` / `Ctrl-v` / `Ctrl-t` | Open in horizontal split / vertical split / tab |
+| `Ctrl-s` (or `Ctrl-x`) | Open in horizontal split |
+| `Ctrl-v` / `Ctrl-t` | Open in vertical split / tab |
 | `Ctrl-u/d` | Scroll preview up/down |
 | `Tab` / `Shift-Tab` | Toggle a result's selection and advance/back up |
 | `Ctrl-q` | Send results to quickfix and open the list |
@@ -357,19 +384,20 @@ with `:cd /path/to/project` if you are searching the wrong tree.
 | `Ctrl-c` | Close directly from Insert mode |
 | `?` | Show picker mappings in Normal mode |
 
-File enumeration follows Telescope/ripgrep's normal ignore behavior; Oil's
-`show_hidden = true` does not make Telescope include all hidden/ignored files.
+`Space Space` and `Space ff` include hidden files such as `.gitignore` and
+files inside dot-directories. Git-ignored files remain excluded, and `.git/`
+internals are filtered out. This applies to the file picker; live grep still uses
+ripgrep's default hidden-file and ignore rules. Oil's hidden-file setting is independent.
 
-The native fzf dependency is installed but not explicitly loaded as an extension.
-To activate it, add this field to the existing spec in `lua/plugins/telescope.lua`,
-keeping its dependencies and keys, then restart:
+The native fzf extension is enabled. Separate search terms with spaces to match
+them anywhere in the path, in any order: `omniscience flm131` matches
+`flm131/omniscience.py`. Each term supports fuzzy matching; characters within
+one term still need to occur in order.
 
-```lua
-config = function()
-  require("telescope").setup({})
-  require("telescope").load_extension("fzf")
-end,
-```
+While typing, use `Ctrl-n` for the next result and `Ctrl-p` for the previous
+result. Kitty does not intercept these keys; its pane navigation uses
+`Ctrl-Shift-h/j/k/l`. Neovim's global Normal-mode `Ctrl-n/p` quickfix mappings
+do not affect typing in the picker. Alternatively, press `Esc` and use `j/k`.
 
 ### Lazygit: Git navigation and commits
 
@@ -427,27 +455,21 @@ export PATH="$HOME/.config/nvim/bin:$PATH"
 export LG_CONFIG_FILE="$HOME/.config/nvim/lazygit/config.yml"
 ```
 
-### Fugitive, Gitsigns, and undo history
+### Gitsigns and undo history
 
-- `Space gs` opens Fugitive status. In that status buffer, `s` stages, `u`
-  unstages, `=` expands a diff, and `cc` begins a commit. `g?` shows local help.
-  `Space gb` opens blame. After loading Fugitive with a shortcut, `:Git ...`
-  runs a Git command. See `:help fugitive` for the status workflow.
-- Gitsigns shows additions/changes/deletions beside file text. Its commands
-  include `:Gitsigns preview_hunk`, `:Gitsigns stage_hunk`, and
-  `:Gitsigns reset_hunk` (discards that hunk's edits). No `]c`, `[c`, or hunk
-  staging shortcuts have been added by this config; use its commands/help.
-
-`Space u` opens/closes Undotree. Move focus into its split with `Ctrl-w w`.
-Its local keys include:
-
-| Key in Undotree | Action |
-| --- | --- |
-| `J` / `K` | Previous/next undo state |
-| `<` / `>` | Previous/next saved state |
-| `Tab` | Return focus to the file window |
-| `D` | Toggle the diff pane |
-| `?` / `q` | Show local help / close the undo panel |
+- `Space lg` opens the separate LazyGit program for status, staging, commits,
+  and branches. Its mapping lives in `lua/config/remap.lua`; the terminal launcher
+  is `lua/util/lazygit.lua`. It does not require a Neovim Git plugin.
+- `Space gb` opens Gitsigns blame. Focus its panel with `Ctrl-h` or `Ctrl-w w`;
+  use `j/k` to navigate, `s` to show a commit, `S` to show it in a tab, and
+  `Enter` for the action menu. Close the panel with `Space wd` or `:q`.
+- Gitsigns shows additions/changes/deletions beside file text. Use `]c` / `[c`
+  to jump to the next/previous change in the file. `Space gp` previews a change
+  inline, and `Space gd` opens a vertical diff against Git's index (staged
+  version). In the diff view, `]c` / `[c` use Neovim's native diff navigation.
+  Use `Ctrl-h/l` to move between panes; close the comparison pane with `Space wd`.
+  The index pane is editable: saving it changes what is staged.
+  `:Gitsigns stage_hunk` stages a change; `:Gitsigns reset_hunk` discards it.
 
 Ordinary `u` and `Ctrl-r` remain undo/redo in file buffers. The history can
 survive restarts, but persistent undo is not a backup or an autosave of unsaved files.
@@ -482,7 +504,9 @@ TODO keys are buffer-local: in this window `Space d/p/n` mean task operations,
 not the global black-hole delete/location-list actions. `Space b` and `Space l`
 wait briefly for longer sequences so `Space bd/bo` and `Space lg` remain reachable.
 Save with `:w` before requesting a summary: it reads saved files from disk. Plain `q` closes this
-window rather than starting macro recording.
+window rather than starting macro recording. The TODO buffer's immediate
+`Space m` meeting shortcut takes precedence over `Space mr`; use
+`:RenderMarkdown buf_toggle` to toggle rendering there.
 
 ## Installation
 
@@ -490,7 +514,7 @@ Complete **1A (Ubuntu)** or **1B (macOS)**, then **steps 2–3** on both systems
 Commands assume Bash on Ubuntu and zsh on macOS.
 
 Minimum versions for this config:
-[Neovim 0.12+ and tree-sitter CLI 0.26.1+](https://github.com/nvim-treesitter/nvim-treesitter/blob/5cb0114e6242625db56dd6440e945ed1ece10bc7/README.md#requirements),
+[Neovim 0.12+ and tree-sitter CLI 0.26.1+](https://github.com/nvim-treesitter/nvim-treesitter/blob/60c0f468de3e636fa660a419d537e8033aca4e39/README.md#requirements),
 [Node.js 22.22.2+](https://github.com/typescript-language-server/typescript-language-server/blob/v6.0.2/package.json),
 and [Go 1.26+](https://github.com/golang/tools/blob/gopls/v0.23.0/gopls/go.mod).
 
@@ -503,11 +527,11 @@ download/extract/link commands below and keep your existing installation.
 Skip font installation too if JetBrainsMono Nerd Font is already installed.
 
 ```bash
-# Install build/download tools, search tools, delta, Python, Rust formatting,
+# Install build/download tools, search tools, delta, Python,
 # and clipboard providers (xclip for X11; wl-clipboard for Wayland).
 sudo apt update
 sudo apt install -y build-essential curl ca-certificates git unzip fontconfig \
-  ripgrep fd-find fzf git-delta python3 python3-pip python3-venv rustfmt \
+  ripgrep universal-ctags fd-find fzf git-delta python3 python3-pip python3-venv \
   xclip wl-clipboard golang-1.26-go
 
 # Put local programs and Ubuntu's versioned Go toolchain on PATH now and in future shells.
@@ -586,12 +610,12 @@ brew update
 brew install neovim tree-sitter-cli
 
 # Install file/content search and fuzzy-finder tools.
-brew install ripgrep fd fzf
+brew install ripgrep universal-ctags fd fzf
 
 # Install lazygit and its delta diff pager (opened in Neovim with Space lg).
 brew install lazygit git-delta
 
-# Install language toolchains: Node includes npm; Go includes gofmt; Rust includes rustfmt.
+# Install language toolchains for project work; Node includes npm.
 # Node/npm are also required by the Python language server (pyright).
 brew install node go python rust
 
@@ -633,7 +657,8 @@ Run these in the same terminal you will use for Neovim:
 
 ```sh
 # Check that the editor and language tools are on PATH.
-command -v nvim tree-sitter node npm go rustfmt
+command -v nvim tree-sitter node npm go rg ctags
+ctags --version # Must say Universal Ctags and include +json.
 
 # Check versions against the minimums listed above.
 nvim --version | head -n 1
@@ -649,10 +674,10 @@ nvim
 Inside Neovim, run each command and wait for installation to finish:
 
 ```vim
-" Install the formatters and linter used by this config.
-:MasonInstall stylua oxfmt oxlint clang-format
+" Optional: install Oxlint for JavaScript/TypeScript projects that use it.
+:MasonInstall oxlint
 
-" Check that the Node/npm/Go prerequisites are visible to Neovim.
+" Check Universal Ctags, ripgrep, and language-server toolchains.
 :checkhealth setup
 
 " Check language-server installation progress; failed jobs have details in :MasonLog.
@@ -662,8 +687,7 @@ Inside Neovim, run each command and wait for installation to finish:
 :checkhealth vim.provider
 ```
 
-Quit and reopen Neovim once installation finishes. No Copilot account or
-subscription is needed.
+Quit and reopen Neovim once installation finishes.
 
 ## Plugin catalog and default states
 
@@ -671,8 +695,7 @@ subscription is needed.
 under **Not Loaded** in `:Lazy` until its key, event, filetype, or dependency
 triggers it. That is different from being disabled.
 
-There are **30 external plugins in the lockfile**: 28 enabled; Copilot and
-render-markdown are disabled. A lockfile entry does not imply that a plugin loads.
+A lockfile entry does not imply that a plugin has loaded yet.
 The local TODO manager is listed separately. The tables include dependencies,
 not just plugins with their own configuration files.
 
@@ -687,13 +710,10 @@ not just plugins with their own configuration files.
 | [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) | Enabled; first Insert mode | Completion menu; `Ctrl-Space`, `Ctrl-n/p`, `Enter`. Config: [cmp.lua](lua/plugins/cmp.lua). |
 | [cmp-nvim-lsp](https://github.com/hrsh7th/cmp-nvim-lsp) | Enabled; cmp dependency | Supplies language-server completion items to nvim-cmp; no separate shortcut. |
 | [cmp-buffer](https://github.com/hrsh7th/cmp-buffer) | Enabled; cmp dependency | Suggests words from buffer text; no separate shortcut. |
-| [cmp-path](https://github.com/hrsh7th/cmp-path) | Enabled; cmp dependency | Suggests filesystem paths; no separate shortcut. |
-| [LuaSnip](https://github.com/L3MON4D3/LuaSnip) | Enabled; cmp dependency | Expands snippet completion items. No dedicated snippet-jump keys or additional snippet collection are configured. |
+| [LuaSnip](https://github.com/L3MON4D3/LuaSnip) | Enabled; cmp dependency | Expands snippets; `Ctrl-j/k` moves between active placeholders in Insert/Select mode. |
+| [friendly-snippets](https://github.com/rafamadriz/friendly-snippets) | Enabled; LuaSnip dependency | Language-specific snippet collection, loaded by filetype and offered as `[Snippet]` completions. |
 | [cmp_luasnip](https://github.com/saadparwaiz1/cmp_luasnip) | Enabled; cmp dependency | Connects LuaSnip to nvim-cmp; no separate shortcut. |
-| [conform.nvim](https://github.com/stevearc/conform.nvim) | Enabled; save or `Space cf` | Formats on save or request, with an LSP fallback; `:ConformInfo`. Config: [conform.lua](lua/plugins/conform.lua). |
-| [nvim-lint](https://github.com/mfussenegger/nvim-lint) | Enabled; file read/save | Runs available `oxlint` on JS/TS buffers and publishes diagnostics; no custom shortcut. Config: [lint.lua](lua/plugins/lint.lua). |
 | [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) | Enabled; startup | Installs parsers for syntax highlighting/folds; `:TSInstall`, `:TSUpdate`. Config: [treesitter.lua](lua/plugins/treesitter.lua). |
-| [copilot.vim](https://github.com/github/copilot.vim) | **Disabled** (`enabled = false`) | Optional AI inline suggestions. If enabled, loads on Insert mode; `:Copilot setup/status`, `Tab` accepts. Markdown suggestions remain disabled. Config: [copilot.lua](lua/plugins/copilot.lua). |
 
 ### Navigation and Git
 
@@ -701,30 +721,27 @@ not just plugins with their own configuration files.
 | --- | --- | --- |
 | [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) | Enabled; picker shortcut | File, text, buffer, and recent-file pickers; `Space ff/fg/sg/fb/fr`. Config: [telescope.lua](lua/plugins/telescope.lua). |
 | [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) | Enabled; Telescope dependency | Lua utilities used by Telescope; no direct UI/key. |
-| [telescope-fzf-native.nvim](https://github.com/nvim-telescope/telescope-fzf-native.nvim) | Enabled; Telescope dependency | Compiled native fuzzy-sorter extension, built with `make`. The config includes it but does **not** call `load_extension("fzf")`; it is not explicitly activated. |
+| [telescope-fzf-native.nvim](https://github.com/nvim-telescope/telescope-fzf-native.nvim) | Enabled; Telescope dependency | Compiled native fuzzy-sorter extension, built with `make`. Activated with `load_extension("fzf")`; supports fuzzy path searches with space-separated terms in any order. |
 | [oil.nvim](https://github.com/stevearc/oil.nvim) | Enabled; startup | Edit directories as buffers, including file operations; `Space e`, `-`. Config: [oil.lua](lua/plugins/oil.lua). |
 | [flash.nvim](https://github.com/folke/flash.nvim) | Enabled; `VeryLazy` or shortcut | Labeled jumps with **`s`**, enhanced character motions and searches; command-line `Ctrl-s` toggles search integration. Config: [flash.lua](lua/plugins/flash.lua). |
-| [vim-fugitive](https://github.com/tpope/vim-fugitive) | Enabled; Git shortcut | Git status/blame; `Space gs/gb`. The same file supplies `Space lg` for the separate lazygit program. Config: [fugitive.lua](lua/plugins/fugitive.lua). |
-| [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) | Enabled; before reading a file | Git change signs in the gutter and hunk actions through `:Gitsigns`; **no custom hunk mappings** are configured. Config: [gitsigns.lua](lua/plugins/gitsigns.lua). |
+| [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) | Enabled; file read or Git shortcut | Git change signs, `]c`/`[c` navigation, `Space gp/gd` previews/diffs, and `Space gb` blame. Config: [gitsigns.lua](lua/plugins/gitsigns.lua). |
 | [flatten.nvim](https://github.com/willothy/flatten.nvim) | Enabled; early startup | Opens files requested by terminal programs in the current Neovim session; manages the lazygit float during file/commit edits. No custom key. Config: [flatten.lua](lua/plugins/flatten.lua). |
-| [undotree](https://github.com/mbbill/undotree) | Enabled; `Space u` | Shows branching undo history; `Space u`. Config: [undotree.lua](lua/plugins/undotree.lua). |
 
 ### Display, themes, and local tools
 
 | Plugin/module | Default loading/state | What it does; entry point |
 | --- | --- | --- |
 | [which-key.nvim](https://github.com/folke/which-key.nvim) | Enabled; `VeryLazy` or shortcut | Shows pending key sequences and mapping hints; pause after a prefix or use `Ctrl-?`. Config: [which-key.lua](lua/plugins/which-key.lua). |
-| [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) | Enabled; startup | Status line and tab line with filenames and diagnostic counts; no custom keys. Config: [lualine.lua](lua/plugins/lualine.lua). |
+| [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) | Enabled; startup | Status line and tab line; tabs show tab numbers and filenames without diagnostic counts. No custom keys. Config: [lualine.lua](lua/plugins/lualine.lua). |
 | [nvim-web-devicons](https://github.com/nvim-tree/nvim-web-devicons) | Enabled; Oil/lualine dependency | File-type icons; needs an installed Nerd Font, no custom key. |
-| [render-markdown.nvim](https://github.com/MeanderingProgrammer/render-markdown.nvim) | **Disabled** (`enabled = false`) | Optional visual Markdown decorations. Markdown currently displays source text with syntax highlighting. To use its commands, enable the plugin and restart. Config: [render-markdown.lua](lua/plugins/render-markdown.lua). |
+| [render-markdown.nvim](https://github.com/MeanderingProgrammer/render-markdown.nvim) | Enabled; Markdown file or `:RenderMarkdown` | Raw by default; `Space mr` toggles visual rendering for the current Markdown buffer. Config: [render-markdown.lua](lua/plugins/render-markdown.lua). |
 | [gruvbox.nvim](https://github.com/ellisonleao/gruvbox.nvim) | Enabled; startup; **active in dark mode** | Dark palette. Config: [themes/gruvbox.lua](lua/plugins/themes/gruvbox.lua). |
 | [github-nvim-theme](https://github.com/projekt0n/github-nvim-theme) (`github-theme` in Lazy) | Enabled; on demand; **active in light mode** | Supplies `github_light`. Config: [themes/github.lua](lua/plugins/themes/github.lua). |
-| [everforest-nvim](https://github.com/neanias/everforest-nvim) | Enabled; startup; **alternative, not selected automatically** | Optional `:colorscheme everforest`. Declared in both [everforest.lua](lua/plugins/everforest.lua) and [themes/everforest.lua](lua/plugins/themes/everforest.lua); Lazy merges them into one plugin. |
 | Local TODO manager | Enabled; module evaluated at startup | Floating Markdown task manager; `Space td/ta/ts`. Code: [todo.lua](lua/plugins/todo.lua), [core.lua](lua/todo/core.lua). This is local code, not a downloaded Lazy plugin. |
 
 The active theme is chosen by [colorscheme.lua](lua/config/colorscheme.lua):
 `:set background=dark` selects Gruvbox; `:set background=light` selects GitHub
-Light. A later background change can replace a manually selected Everforest.
+Light.
 
 ## Installing, updating, enabling, and disabling plugins
 
@@ -764,7 +781,7 @@ These commands also work from Neovim's command line:
 | `:Lazy restore` | Match the current `lazy-lock.json` |
 | `:Lazy clean` | Remove unused plugin checkouts |
 | `:Lazy build telescope-fzf-native.nvim` | Rebuild the native Telescope dependency |
-| `:Lazy load undotree` | Load an enabled plugin before its normal trigger |
+| `:Lazy load telescope.nvim` | Load an enabled plugin before its normal trigger |
 | `:Lazy log` / `:Lazy profile` | Inspect revisions / startup loading time |
 
 Checks run in the background, with `notify = false` in `lua/config/lazy.lua`.
@@ -776,7 +793,7 @@ failure and does not mean an update was applied. See [Lazy usage](https://lazy.f
 1. Save your files and preserve the current `lazy-lock.json` in Git or a backup.
 2. Run `:Lazy check`, inspect the entries, then `u` for one plugin or `U` for all.
 3. Wait for downloads/builds, restart Neovim, and check editing, completion,
-   formatting, and Git navigation.
+   snippets, and Git navigation.
 4. Review `git diff -- nvim/lazy-lock.json` from `computer_setup` and save the
    lockfile with your config changes so the other computer can use the same versions.
 
@@ -814,20 +831,20 @@ version may require newer runtimes; inspect its log/requirements if an update fa
 ### Enable, disable, add, or pin a plugin
 
 Edit the plugin's declaration under `lua/plugins/` or `lua/plugins/themes/`.
-For example, [copilot.lua](lua/plugins/copilot.lua) currently contains:
+For example, to disable a plugin entirely, add a top-level `enabled` field:
 
 ```lua
 return {
-  "github/copilot.vim",
-  enabled = false, -- change to true to enable; keep the file's other settings
+  "MeanderingProgrammer/render-markdown.nvim",
+  enabled = false, -- disables plugin loading; keep the file's other settings
   -- ...
 }
 ```
 
-Save, restart Neovim, then use `:Lazy install` if needed. Enabling Copilot also
-requires `:Copilot setup` to authenticate; `:Copilot status` diagnoses it.
-Normal LSP/snippet completion needs no Copilot account. If enabled, Copilot uses
-`Tab` for accepting suggestions and is still disabled for Markdown by its settings.
+Save, restart Neovim, then use `:Lazy install` if needed.
+
+This differs from `opts.enabled = false` in our Markdown renderer: that loads
+the plugin but starts rendering turned off, so `Space mr` can toggle it.
 
 For another plugin, add `enabled = false` to its existing spec, save, and restart.
 Use `:Lazy clean` to remove its now-unused files. To re-enable, remove that field
@@ -854,7 +871,7 @@ Some declarations have dependencies or code that needs special handling:
 - Do not disable a dependency while its parent still requires it; for example,
   `nvim-cmp` needs LuaSnip and the completion sources.
 - Gruvbox and GitHub Light are referenced by `lua/config/colorscheme.lua`; change
-  that selection before disabling a required theme. Everforest has two declarations.
+  that selection before disabling a required theme.
 - The TODO module executes when imported and returns an empty spec. To disable
   it, move `lua/plugins/todo.lua` to a location outside `lua/plugins/`, such as
   `disabled/todo.lua`, and restart. A field on its empty return value will not
@@ -917,45 +934,98 @@ Disabling the `oxlint` LSP separately requires editing its enable call in `lsp.l
 
 ### Formatting and diagnostics
 
-`Space cf` requests formatting; saving also formats, with a three-second timeout
-and LSP formatting as a fallback. `:ConformInfo` shows which formatter was found.
+No formatter plugin or formatting shortcut is configured. Saving does not run
+formatting or ESLint fix-all. Neovim's built-in `=` operator can still reindent
+text. Previously installed formatter executables can be managed separately in Mason.
 
-| Filetype | Preferred formatter |
-| --- | --- |
-| Lua | `stylua` |
-| JS/TS/JSX/TSX, JSON/JSONC, Markdown, YAML, CSS, GraphQL | `oxfmt` |
-| Go | `gofmt` from Go |
-| Rust | `rustfmt` |
-| C/C++ | `clang-format` |
-| Python | No external formatter configured; LSP fallback only if supported by the attached server |
-
-Install `stylua`, `oxfmt`, `oxlint`, and `clang-format` through Mason as shown in
-installation. Pyright is not a Python formatter. To turn off automatic formatting
-but keep `Space cf`, remove the `format_on_save` table in `lua/plugins/conform.lua`.
-
-ESLint fix-all is requested before saves when its server is attached. nvim-lint
-also runs available `oxlint` on reading/saving JS/TS files. The oxlint LSP can
-provide additional diagnostics; this setup has both integrations. Gutter signs,
+ESLint fixes can be requested manually with `:EslintFixAll` when attached. The
+optional oxlint LSP provides diagnostics when attached. Gutter signs,
 diagnostic floats, and the quickfix list are different views of diagnostics.
+
+Automatic diagnostic display is disabled globally in `init.lua` for all
+languages and buffers, including Python and C/C++. Error/warning signs,
+underlines, and inline messages are hidden; Lualine also omits diagnostic counts.
+Language servers still provide completion, navigation, and code actions.
+Diagnostics remain available when explicitly requested through `Space sd`,
+`Space cd`, or quickfix. To temporarily restore buffer decorations, run
+`:lua vim.diagnostic.enable(true)`; remove the disable call in `init.lua` to
+make that permanent. Status-bar counts are configured separately in `lualine.lua`.
 
 ### Treesitter and Markdown
 
 The configured parser list is `vimdoc`, `lua`, `typescript`, `tsx`, `go`,
-`javascript`, `python`, `rust`, `c`, `cpp`, `markdown`, and `markdown_inline`.
-Use `:TSInstall language` for an additional parser and `:TSUpdate` after relevant
-updates. Add a parser to `treesitter.lua` if you want it in the configured build list.
+`javascript`, `python`, `rust`, `c`, `cpp`, `markdown`, `markdown_inline`, `html`,
+`css`, `scss`, `json`, `json5`, `yaml`, `toml`, `bash`, `dockerfile`, `sql`, and
+`regex`. JSON-with-comments (`jsonc`) buffers use the `json5` parser.
 
-Markdown displays source text with syntax highlighting. `render-markdown.nvim`
-is disabled; its commands are unavailable in a fresh session. If you choose to
-re-enable it in `lua/plugins/render-markdown.lua`, restart Neovim, open Markdown,
-and use `:RenderMarkdown toggle` to toggle its decorations.
+Keep this list in `opts.parsers` in `lua/plugins/treesitter.lua`. Startup installs
+missing parsers asynchronously; existing parsers are skipped. On another machine,
+pull this repository, run `:Lazy restore` if needed to match plugin versions, and
+restart Neovim. Leave it open until parser installation completes, then reopen
+the file if highlighting has not started. Each machine needs the compiler, curl,
+tar, and tree-sitter CLI prerequisites listed in Installation, plus network access
+when downloading missing parsers. Parser binaries are built locally, not committed.
+
+`:TSInstall language` installs a parser on just that machine; add it to the shared
+list to install it everywhere. `:TSUpdate` updates installed parsers and also runs
+when Lazy builds/updates the Treesitter plugin. Removing a name from the list does
+not uninstall an existing parser; use `:TSUninstall language` for that.
+
+Markdown displays raw source with syntax highlighting by default. In Normal mode,
+press `Space mr` to toggle rendered headings, lists, tables, and code blocks in
+the current buffer. Press it again to return to raw source. Other Markdown
+buffers still start raw, and restarting resets rendering to off. The equivalent
+command is `:RenderMarkdown buf_toggle`. This changes only presentation, not text.
+Lazy installs the plugin normally after restarting with this configuration.
 Markdown indentation stays at two spaces through `after/ftplugin/markdown.lua`.
+
+### Source navigation without building
+
+Universal Ctags indexes definitions without needing compiler flags or a Docker build.
+Dependency definitions still require their source or headers on the host. Install `universal-ctags` using apt or Homebrew as shown above;
+`ctags --version` must report **Universal Ctags** and **+json**. On macOS, ensure
+Homebrew's executable precedes the system's BSD ctags on PATH. `:checkhealth setup`
+checks this requirement.
+
+- `gd` prefers indexed definitions for C/C++ (also Objective-C), then asks the
+  language server if none match. This avoids relying on clangd results when
+  container build paths are unavailable. Other languages try the LSP first.
+- `Space cD` always searches source definitions. One match opens directly;
+  multiple matches open Telescope with scope, path, line, and a preview. Use
+  `Ctrl-n/p` to select and `Enter` to open. `Ctrl-o` returns to the previous location.
+- Indexing runs asynchronously across the outermost Git repository, including
+  sibling submodules. Outside Git, the current file's directory is the root.
+  Ripgrep ignore rules apply; `.git`, `build`, `devel`, `install`, `node_modules`,
+  `.venv`, and `vendor` directories are excluded.
+- ROS workspaces (`ros/src` or a root `package.xml`) also index installed headers:
+  `AMENT_PREFIX_PATH` include directories, or `/opt/ros/$ROS_DISTRO/include` when
+  no prefixes are set. If neither variable is set, installed `/opt/ros/*/include`
+  directories are included. Extra dependency directories can be added with
+  `vim.g.source_index_paths = { "/path/to/library/include" }` in `init.lua`.
+  These headers enable source navigation, but do not fix clangd's compiler flags
+  or missing-header diagnostics.
+- Saves and regained focus schedule a refresh. Entering a buffer or requesting
+  a definition refreshes an index older than 30 seconds. For external edits
+  while Neovim retains focus, use `:SourceIndexRefresh` to refresh immediately.
+  Index snapshots live in `stdpath("cache")/source-index`; repositories are not modified.
+
+The index matches names and records scopes; it does not perform C++ type inference.
+Overloads and same-named methods can require choosing a result. It does not replace
+LSP references, rename, or type diagnostics. For a configured C++ build where you
+prefer semantic navigation, set `vim.g.source_index_cpp_first = false` in `init.lua`.
+No additional Neovim plugin is required.
+
+For a ROS2 project built in Docker, clangd running on the host still needs a
+matching `compile_commands.json` and access to the paths and headers it names.
+A database containing only container paths will not supply a working host build
+context. The source index is the configured fallback for browsing without that
+setup; hiding diagnostics does not repair clangd's build configuration.
 
 ## Configuration files, data, and portability
 
 | Location relative to `~/.config/nvim` | Edit this for |
 | --- | --- |
-| `init.lua` | Leaders and startup order |
+| `init.lua` | Leaders, globally hidden diagnostics, source-index setup, and startup order |
 | `lua/config/remap.lua` | Global editor shortcuts |
 | `lua/config/set.lua` | Options, indentation, undo, and Treesitter activation/folding |
 | `lua/config/lazy.lua` | Plugin imports, update-check behavior, manager setup |
@@ -966,6 +1036,7 @@ Markdown indentation stays at two spaces through `after/ftplugin/markdown.lua`.
 | `lua/setup/health.lua` | `:checkhealth setup` diagnostics |
 | `after/ftplugin/markdown.lua` | Markdown-specific indentation |
 | `lua/util/buffers.lua` | Buffer deletion that preserves windows across tabs |
+| `lua/util/source_index.lua` | Background Ctags indexing and source/LSP definition navigation |
 | `lua/plugins/todo.lua`, `lua/todo/core.lua` | Task UI/storage and task transformations |
 | `lua/util/lazygit.lua` | Terminal launch, pager PATH, and editor handoff |
 | `lazygit/config.yml`, `bin/delta-auto` | Lazygit UI settings and diff pager |
@@ -995,7 +1066,13 @@ Keep the existing `computer_setup/kitty` config; the original dotfiles Kitty
 config was not copied. Neovim rechecks macOS appearance on focus; Ubuntu uses
 the terminal's startup background. The delta wrapper follows macOS appearance
 and uses dark diffs on Linux. Use `:set background=light/dark` to choose an editor
-scheme manually (replace `light/dark` with one value).
+scheme manually (replace `light/dark` with one value). Kitty uses `Ctrl-Shift-1`
+for Gruvbox Dark Hard, `Ctrl-Shift-2` for light, and `Ctrl-Shift-3` for VS Code
+Dark. Switching Kitty colors updates all its windows and defaults for new ones,
+but may not change an already-running Neovim scheme; use the command above.
+The editor background is transparent, inheriting Kitty's background. On macOS,
+the focus check can override a manual editor choice with the OS appearance.
+See the [Kitty guide](../kitty/README.md#manual-theme-switching).
 
 ### Optional: replace an older manual Neovim install on Ubuntu
 
@@ -1035,9 +1112,9 @@ install method does not require deleting another working installation.
 | Plugin update appears to break editing | Restore a known working lockfile, then `:Lazy restore`, and restart. |
 | A plugin is “Not Loaded” | Trigger its documented key/filetype/event; check its load reason in Lazy. This does not mean disabled. |
 | `npm`/`node`/`go` not found or Mason server fails | `:checkhealth setup`, `:MasonLog`, shell versions; install prerequisites, restart from that shell, retry the package. |
+| C/C++ source definition missing | Check `:checkhealth setup`, save the file, and run `:SourceIndexRefresh`; dependency headers must exist on the host. See [source navigation](#source-navigation-without-building). |
+| No error/warning markers | Intentional: diagnostic display is disabled globally; use `Space sd` to inspect diagnostics explicitly. |
 | LSP installed but definition/hover missing | `:checkhealth vim.lsp`, `:LspLog`; check filetype, project root, server capabilities, and language build dependencies. |
-| No Python formatting | Pyright supplies analysis, not formatting; no external Python formatter is configured. Add one to Conform if wanted. |
-| Missing/incorrect formatting | `:ConformInfo`; install the named formatter or inspect its project config. Check `gofmt`/`rustfmt` on PATH. |
 | Treesitter highlighting/folding errors | `:checkhealth nvim-treesitter`, CLI/editor versions, `:TSInstall markdown markdown_inline`, then `:TSUpdate` when appropriate. |
 | Telescope grep finds nothing | Check `rg --version`, `:pwd`, and project ignore rules. |
 | Clipboard copy fails | `:checkhealth vim.provider`; desktop providers include `xclip` (X11) and `wl-clipboard` (Wayland). Headless/SSH sessions may need terminal clipboard support instead. |
@@ -1045,7 +1122,6 @@ install method does not require deleting another working installation.
 | Lazygit fails to launch or display diffs | Check `lazygit --version`, `delta --version`, and executable permissions on `bin/delta-auto`. |
 | A key differs from this guide | Inspect mode/window context, `:verbose nmap ...` / `:verbose imap ...`, and local plugin help. |
 | `Ctrl-s` freezes input | A terminal may intercept it for flow control; `Ctrl-q` resumes that terminal. |
-| Copilot errors after you enable it | Check Node/npm, `:Copilot setup`, and `:Copilot status`; leave disabled if unused. |
 | TODO summary reports missing `claude` | Install/authenticate that optional CLI, or use TODO without AI summaries. |
 
 ## Vim fundamentals and everyday reference
@@ -1103,7 +1179,7 @@ this config rather than performing their usual Visual actions.
 | `Ctrl-o` / `Ctrl-i` | Older/newer location in the jump list |
 | `g;` / `g,` | Older/newer location in the change list |
 | `ma`, `'a`, `` `a `` | Set mark `a`; return to its line / exact position |
-| `gd` | With attached LSP: definition, possibly in another file; otherwise built-in local declaration search |
+| `gd` | Source/LSP definition lookup, possibly in another file; works without LSP through Ctags |
 | `]m` / `[m` | Built-in next/previous method start for Java-like brace structures; not universal semantic function navigation |
 | `zc` / `zo` / `za` | Close/open/toggle a fold |
 
@@ -1119,7 +1195,7 @@ For the exact built-in motion rules, use `:help motion.txt`.
 | `c` | Change: delete then enter Insert mode | `cw`, `ciw`, `ci"`, `cc` |
 | `y` | Yank/copy | `yw`, `yi{`, `yy` |
 | `>` / `<` | Indent / unindent | `>>`, `<<`, Visual `>`/`<` |
-| `=` | Reindent | `==`, `=ap`; distinct from `Space cf` code formatting |
+| `=` | Reindent | `==` for the current line; `=ap` for a paragraph |
 | `gu` / `gU` | Lowercase / uppercase | `guiw`, `gUiw` |
 
 `p`, `x`, and `r` are useful editing commands, but they are not operators waiting
@@ -1204,7 +1280,8 @@ while macOS has built-in clipboard commands.
 
 For a repeatable sequence, `qa` starts recording into register `a`, plain `q`
 stops, `@a` plays it, and `@@` repeats the last playback. `3@a` runs it three
-times. This config disables `Q`, but `@a`/`@@` still work. TODO's local `q` closes
+times. A message such as `recording @j` means a macro is being recorded; press
+`Esc`, then `q` to stop. This config disables `Q`, but `@a`/`@@` still work. TODO's local `q` closes
 the task window instead of starting/stopping a recording.
 
 ### Ex commands: saving, quitting, files, splits, and shell commands
@@ -1320,7 +1397,7 @@ own actions; consult their local help before treating them as file-editing comma
 | `J` / `K`, Visual | Join selection / keyword lookup | Move selected lines down/up |
 | `Ctrl-d/u`, Normal | Half-screen scroll | Same, then center cursor |
 | `n/N`, Normal | Repeat search | Same, then center/unfold result |
-| `gd`, LSP buffer | Local declaration search | LSP definition lookup |
+| `gd`, Normal | Local declaration search | Source/LSP definition lookup |
 | `K`, LSP buffer | Keyword-program lookup | LSP hover documentation |
 | `Ctrl-h`, Insert in LSP buffer | Delete previous character | Signature help |
 | `Ctrl-n/p`, `Ctrl-e`, `Enter`, Insert | Keyword completion / copy character from line below / newline | nvim-cmp selection, abort, and accept when its menu applies |
@@ -1333,16 +1410,15 @@ Corrections to the older learning notes and README:
 - Flash uses **`s`**, not `Space s`.
 - **`Space sh` searches help**; use `Space -` for a horizontal split.
 - `Space bd/bo` operate on buffers; tab operations use `Space Tab`.
-- `gd` is only LSP definition lookup after an LSP attaches; it is not limited to the current file.
+- `gd` uses source/LSP definition lookup and is not limited to the current file; `Space cD` forces source lookup.
 - `gg`/`G` go to the buffer's beginning/end, not the visible page.
 - `e` is a word-end motion, not an inner/around text object.
 - Use `:10,10+2d` or `:10;+2d` for lines 10–12. Use `:1,10d` for the first ten lines.
 - Neovim maps plain `Y` to `y$` by default. This config's nonrecursive `Space Y`
   mapping uses the underlying linewise `Y` command to copy a whole line to `+`;
   ordinary `yy` is also a whole-line yank.
-- Copilot is disabled, so `Tab` does not accept AI suggestions unless you enable it.
-- Gitsigns and LuaSnip are enabled, but this config does not add custom hunk or
-  snippet-jump mappings. A plugin's presence does not imply every common internet example is mapped.
+- Gitsigns uses `]c`/`[c` for changes and `Space gp/gd` for previews/diffs.
+  LuaSnip uses `Ctrl-j/k` in Insert/Select mode for active snippet placeholders.
 
 To inspect a mapping in the running editor, use `:verbose nmap s`,
 `:verbose nmap <leader>sh`, or `:verbose imap <C-h>`. The output includes where
