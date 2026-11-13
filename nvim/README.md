@@ -18,6 +18,7 @@ source with syntax highlighting; **`Space mr`** toggles rendering for that buffe
   - [Windows, buffers, and tabs](#windows-buffers-and-tabs)
   - [Git, Markdown, and task entry points](#git-markdown-and-task-entry-points)
 - [Tool workflows and their local keys](#tool-workflows-and-their-local-keys)
+  - [Copy and paste: internal registers versus the system clipboard](#copy-and-paste-internal-registers-versus-the-system-clipboard)
   - [Editing several files side by side](#editing-several-files-side-by-side)
   - [Kitty panes versus Neovim windows](#kitty-panes-versus-neovim-windows)
   - [Oil: files and directories](#oil-files-and-directories)
@@ -74,6 +75,10 @@ Press `Esc` before Normal-mode shortcuts. Keys separated by spaces are sequentia
 | Close window / delete buffer | `Space wd` / `Space bd` |
 | Keep only current buffer | `Space bo` |
 | Save / quit | `:w` / `:q` |
+| Copy / paste inside Neovim | `yy` (line), Visual `y` (selection) / `p` or `P` |
+| Copy to system clipboard | `Space Y` (line), Visual `Space y` (selection) |
+| Paste from system clipboard | `"+p` / `"+P`; Insert mode: `Ctrl-r +` |
+| Replace selection, keeping copied text | Visual `Space p` |
 | Definition / references / hover | `gd` (source/LSP); `gr` / `K` with LSP attached |
 | Rename / code action | `Space cr` / `Space ca` |
 | LazyGit / TODO | `Space lg` / `Space td` |
@@ -127,6 +132,9 @@ Tab operations use the `Space Tab` prefix. The top bar still displays tab pages.
 - Files are **not autosaved** generally. No code formatter is configured.
   The TODO window saves its task file on close/leave.
 - Swap and backup files are off. Persistent undo is on in `~/.vim/undodir`.
+- External file edits are checked on focus, buffer entry, and Normal-mode idle;
+  unmodified buffers reload automatically. Unsaved local edits require resolving
+  the conflict instead of silently reloading.
 - Ordinary `y`, `d`, and `p` use Vim registers. They do not automatically use
   the system clipboard; use the explicit clipboard keys below.
 - No Command-key mappings are configured. Terminal shortcuts come from Kitty.
@@ -179,8 +187,12 @@ Pause after a group prefix for which-key hints.
 
 `Space y` and `Space d` are operator prefixes in Normal mode, not immediate
 copy/delete actions. They share prefixes with longer mappings, so Neovim may
-wait briefly to determine the sequence. When an LSP is attached, `Space cd`
-opens diagnostics; use `"_dd` to delete an entire line without saving it in a register.
+wait briefly to determine the sequence. `Space d d` deletes a whole line without
+saving it in a register; `"_dd` is the native equivalent. TODO's Normal-mode
+`Space d` is a buffer-local task action instead.
+
+For clipboard paste and examples of both workflows, see
+[copy and paste](#copy-and-paste-internal-registers-versus-the-system-clipboard).
 
 ### Files, search, and jumping
 
@@ -282,6 +294,73 @@ Task-window shortcuts are listed under [TODO and Markdown notes](#todo-and-markd
 
 ## Tool workflows and their local keys
 
+### Copy and paste: internal registers versus the system clipboard
+
+**Use `y`/`p` for editing inside Neovim, and `Space y`/`Space Y` plus `"+p`
+when exchanging text with other applications.** This config leaves
+`clipboard=unnamedplus` off, so ordinary yanks and deletes do not replace the
+system clipboard. Registers are shared across buffers in the same Neovim session;
+you can yank in one file, switch buffers or splits, and paste in another.
+
+Press `Esc` first for the Normal-mode examples below. A leading `"` is a literal
+double-quote key that selects a register, not a quote around the command.
+`Space Y` means Space, then Shift-y; `Space y y` uses two lowercase y's.
+
+| Task | Internal Neovim registers | System clipboard (`+` register) |
+| --- | --- | --- |
+| Copy entire current line | `yy` | `Space Y` or `Space y y` (native: `"+yy`) |
+| Copy word under cursor | `yiw` | `Space y i w` (native: `"+yiw`) |
+| Copy a selection | Select with `v` or `V`, then `y` | Select with `v` or `V`, then `Space y` |
+| Copy whole buffer | `ggVGy` | `ggVG`, then `Space y` (or `:%yank +`) |
+| Cut entire line | `dd` | `"+dd` |
+| Paste after cursor / below line | `p` | `"+p` |
+| Paste before cursor / above line | `P` | `"+P` |
+| Insert while typing | Insert mode: `Ctrl-r "` | Insert mode: `Ctrl-r +` |
+
+Linewise copies paste as whole lines; characterwise copies paste beside the
+cursor. `Space Y` copies the **whole line even when the cursor is in the middle**:
+its nonrecursive mapping runs native `"+Y`. To copy only from the cursor to the
+end of the line, use `Space y $`.
+
+Typical workflows:
+
+1. **Move text within Neovim:** `yy` to copy (or `dd` to cut), navigate to the
+   destination, then `p`. For selected text, use `v`/`V`, select, then `y` or `d`.
+2. **Copy out to a browser, chat, or another app:** select text and press
+   `Space y`, or use `Space Y` for a line. Switch apps and use that app's paste
+   shortcut, usually `Ctrl-v` on Linux or `Cmd-v` on macOS.
+3. **Paste text copied from another app:** copy there, return to Neovim, press
+   `Esc`, then `"+p`. While already typing, use `Ctrl-r` followed by `+`.
+4. **Replace several selections with the same copied text:** yank once, select
+   a target, and use Visual `Space p`. Repeat on other selections. This deletes
+   each target into the black-hole register before putting the copied text.
+
+**Plain `p` uses the unnamed register (`"`), which can change after edits.**
+For example, after `yy` followed by `dd`, plain `p` puts the deleted line;
+`"0p` still puts the original yank. Register `0` holds the latest ordinary yank,
+not an explicitly targeted clipboard or named-register yank. For longer-lived
+storage during editing, use `"ayy` to copy a line into register `a`, then `"ap`
+to paste it later. `"_dd` discards a line without disturbing those registers.
+
+Explicit clipboard yanks can also become the unnamed register's current value,
+so `p` may appear to paste the clipboard immediately after `Space y`. Use `"+p`
+when you specifically want the current system clipboard, including after copying
+something in another app. `Space yf` copies the current buffer path (possibly
+relative); in Oil it copies the current directory path.
+
+**`Space p` is not a clipboard-paste shortcut.** In Visual mode it replaces a
+selection while preserving the unnamed register; in Normal mode it goes to the
+previous location-list item, and in the TODO window it promotes a task.
+Normal-mode `Ctrl-v` starts a block selection; it is not system paste.
+
+Inspect stored text with `:registers`, `:reg 0`, `:reg a`, or `:reg +`.
+Check `:set clipboard?` to confirm automatic clipboard integration is off.
+If explicit clipboard operations fail, run `:checkhealth vim.provider`:
+Linux desktop sessions use providers such as `xclip` (X11) or `wl-clipboard`
+(Wayland), while macOS supplies `pbcopy`/`pbpaste`. SSH/headless sessions depend
+on the available provider and terminal support. See also the
+[register and macro reference](#registers-clipboard-and-macros).
+
 ### Editing several files side by side
 
 1. Start `nvim` in the project directory. `Space Space` finds your first file.
@@ -317,6 +396,8 @@ come from [kitty.conf](../kitty/kitty.conf); Neovim keys below require Normal mo
 | Zoom pane | No custom mapping | `Ctrl-Shift-z` |
 
 Each Kitty pane runs a terminal session; Neovim windows share one editor session.
+When Kitty's stack/zoom layout is active, `Ctrl-Shift-h/l` cycles its panes;
+in other layouts those keys move to the left/right neighbor.
 Closing the Kitty pane closes its terminal, including the Neovim running there.
 Normal-mode window keys do not navigate Kitty panes or control a terminal program
 such as lazygit. In an embedded terminal, use `Ctrl-\` then `Ctrl-n` to return to
@@ -674,6 +755,9 @@ nvim
 Inside Neovim, run each command and wait for installation to finish:
 
 ```vim
+" Match this checkout's pinned plugin versions; sync/update selects newer versions.
+:Lazy restore
+
 " Optional: install Oxlint for JavaScript/TypeScript projects that use it.
 :MasonInstall oxlint
 
@@ -738,6 +822,7 @@ not just plugins with their own configuration files.
 | [gruvbox.nvim](https://github.com/ellisonleao/gruvbox.nvim) | Enabled; startup; **active in dark mode** | Dark palette. Config: [themes/gruvbox.lua](lua/plugins/themes/gruvbox.lua). |
 | [github-nvim-theme](https://github.com/projekt0n/github-nvim-theme) (`github-theme` in Lazy) | Enabled; on demand; **active in light mode** | Supplies `github_light`. Config: [themes/github.lua](lua/plugins/themes/github.lua). |
 | Local TODO manager | Enabled; module evaluated at startup | Floating Markdown task manager; `Space td/ta/ts`. Code: [todo.lua](lua/plugins/todo.lua), [core.lua](lua/todo/core.lua). This is local code, not a downloaded Lazy plugin. |
+| Local source index | Enabled; startup setup, asynchronous indexing | Universal Ctags/ripgrep definition lookup; `gd`, `Space cD`, `:SourceIndexRefresh`. Code: [source_index.lua](lua/util/source_index.lua). No downloaded Lazy plugin. |
 
 The active theme is chosen by [colorscheme.lua](lua/config/colorscheme.lua):
 `:set background=dark` selects Gruvbox; `:set background=light` selects GitHub
@@ -1244,6 +1329,9 @@ or `diw` to delete the whole word around the cursor.
 See `:help operator` and `:help text-objects` for details.
 
 ### Registers, clipboard, and macros
+
+For side-by-side shortcuts and everyday examples, see the
+[copy/paste workflow](#copy-and-paste-internal-registers-versus-the-system-clipboard).
 
 | Register | Contents/use |
 | --- | --- |
