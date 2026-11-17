@@ -18,7 +18,11 @@ return {
 		pickers = {
 			find_files = {
 				hidden = true,
+				no_ignore = true, -- include gitignored files
 				file_ignore_patterns = { "^%.git/", "/%.git/" },
+			},
+			live_grep = {
+				additional_args = { "--no-ignore", "--hidden", "--glob=!.git/" },
 			},
 		},
 	},
