@@ -33,7 +33,7 @@ end
 
 local function root_for(buf)
 	local file = vim.api.nvim_buf_get_name(buf)
-	if file == "" or vim.bo[buf].buftype ~= "" then
+	if file == "" or vim.bo[buf].buftype ~= "" or file:match("^%a[%w+.-]*://") then
 		return
 	end
 	if vim.b[buf].source_index_root then
