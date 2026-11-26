@@ -134,40 +134,42 @@ else
     export PS1="\[\033[0;34m\]\$(parse_vc_branch_and_add_brackets)\[\033[0m\]\[\033[1;32m\]\W $ \[\033[0m\]"
 fi
 
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
-export PATH=/usr/local/cuda-13.2/bin:$PATH
-export LD_LIBRARY_PATH=/usr/local/cuda-13.2/lib64:$LD_LIBRARY_PATH
-source /usr/share/doc/fzf/examples/key-bindings.bash
-source /usr/share/bash-completion/completions/fzf
-
-export CODEX_SANDBOX_DIR="$HOME/git/gitlab/codex_sandbox"
-
-omni-to-sandbox() {
-    if [[ $# -lt 1 || ! -d "$1" ]]; then
-        echo "Usage: omni-to-sandbox REPO_PATH [--dry-run]"
-        return 1
-    fi
-    local repo
-    repo="$(realpath -- "$1")" || return 1
-    shift
-
-    rsync -avi --no-links --no-devices --no-specials \
-        --exclude-from="$CODEX_SANDBOX_DIR/rsync-excludes.txt" \
-        "$@" "$repo/" "$CODEX_SANDBOX_DIR/"
+# Prepend an installed directory to PATH once.
+path_prepend() {
+    [[ -d "$1" ]] || return
+    case ":${PATH:-}:" in
+        *":$1:"*) ;;
+        *) PATH="$1${PATH:+:$PATH}" ;;
+    esac
 }
 
-sandbox-to-omni() {
-    if [[ $# -lt 1 || ! -d "$1" ]]; then
-        echo "Usage: sandbox-to-omni REPO_PATH [--dry-run]"
-        return 1
-    fi
-    local repo
-    repo="$(realpath -- "$1")" || return 1
-    shift
+# Prefer locally installed programs and Ubuntu's versioned Go toolchain when
+# they are present. Other platforms can continue using their existing PATH.
+path_prepend /usr/local/cuda/bin
+path_prepend /usr/lib/go-1.26/bin
+path_prepend "$HOME/.local/bin"
+export PATH
 
-    rsync -avi --no-links --no-devices --no-specials \
-        --exclude-from="$CODEX_SANDBOX_DIR/rsync-excludes.txt" \
-        "$@" "$CODEX_SANDBOX_DIR/" "$repo/"
-}
-export PATH="$HOME/.local/bin:/usr/lib/go-1.26/bin:$PATH"
+# Use the CUDA version selected by the system's /usr/local/cuda symlink.
+if [[ -d /usr/local/cuda/lib64 ]]; then
+    case ":${LD_LIBRARY_PATH:-}:" in
+        *:/usr/local/cuda/lib64:*) ;;
+        *) export LD_LIBRARY_PATH="/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ;;
+    esac
+fi
+
+# Optional fzf shell integration.
+[[ -r /usr/share/doc/fzf/examples/key-bindings.bash ]] &&
+    . /usr/share/doc/fzf/examples/key-bindings.bash
+[[ -r /usr/share/bash-completion/completions/fzf ]] &&
+    . /usr/share/bash-completion/completions/fzf
+
+# Optional Node Version Manager installation. This does not override the
+# system Node version unless an NVM-managed version is explicitly selected.
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh" --no-use
+[[ -s "$NVM_DIR/bash_completion" ]] && . "$NVM_DIR/bash_completion"
+
+# Host-specific paths, environment variables, and functions belong here so
+# this tracked file can be symlinked from multiple machines unchanged.
+[[ -r "$HOME/.bashrc.local" ]] && . "$HOME/.bashrc.local"
